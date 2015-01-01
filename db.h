@@ -13,17 +13,18 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef __DB_H__
+#define __DB_H__
 
-#include <sys/stat.h>
+#include <sqlite3.h>
 #include <stdbool.h>
 
-double min(double a, double b);
-double max(double a, double b);
-void config_home(char *buf, size_t len);
-void config_dir(char *buf, size_t len);
-void exec_man_for_subcommand(const char *subcommand);
-bool mkdirs(char *path);
+typedef struct {
+    sqlite3* db;
+} Database;
+
+void database_uri(char *path, size_t len);
+Database database_open(const char **error);
+bool database_close(Database db);
 
 #endif

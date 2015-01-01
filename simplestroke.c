@@ -14,34 +14,35 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 #include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <signal.h>
-#include <stdbool.h>
-#include <sys/queue.h>
 
-#include "recorder-x11.h"
+#include "util.h"
 
-stroke_t record_stroke_or_exit() {
-    stroke_t stroke;
-    const char *error = record_stroke(&stroke);
-    if(error) {
-        fprintf(stderr, "record_stroke: %s\n", error);
-        exit(EXIT_FAILURE);
-    }
-    return stroke;
-}
+extern int simplestroke_record(const int argc, const char **argv);
+
+typedef struct {
+    char *name;
+    int (*handler)(const int, const char**);
+} Subcommand;
+
+static Subcommand subcommands[] = {
+    { "record", simplestroke_record },
+};
 
 int main(const int argc, const char **argv) {
-    if(argc == 1) {
-        stroke_t stroke = record_stroke_or_exit();
-        printf("Stroke with %i points recorded\n", stroke.n);
-    } else {
-        fprintf(stderr, "Usage: %s <keycode> <mousebutton>\n", argv[0]);
+    if(argc > 1) {
+        const int n = sizeof(subcommands)/sizeof(Subcommand);
+        for(int i = 0; i < n; i++) {
+            const Subcommand subcmd = subcommands[i];
+            if(!strcmp(argv[1], subcmd.name)) {
+                return subcmd.handler(argc - 1, argv + 1);
+            }
+        }
     }
-    return EXIT_SUCCESS;
+
+    exec_man_for_subcommand(NULL);
+
+    //fprintf(stderr, "Usage: %s <keycode> <mousebutton>\n", argv[0]);
+
+    return EXIT_FAILURE;
 }

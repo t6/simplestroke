@@ -27,24 +27,30 @@
 
 #include "util.h"
 
-double min(const double a, const double b) {
+double
+min(const double a,
+    const double b) {
     return a < b ? a : b;
 }
 
-double max(const double a, const double b) {
+double
+max(const double a,
+    const double b) {
     return a > b ? a : b;
 }
 
-void config_home(char *buf, size_t len) {
+void
+config_home(char* buf,
+            size_t len) {
     // From the XDG Base Directory Specification:
     // If $XDG_CONFIG_HOME is either not set or empty,
     // a default equal to $HOME/.config should be used.
 
-    const char *config_dir = getenv("XDG_CONFIG_HOME");
+    const char* config_dir = getenv("XDG_CONFIG_HOME");
     if(config_dir && strcmp(config_dir, "") != 0) {
         strlcpy(buf, config_dir, len);
     } else {
-        char *home = getenv("HOME");
+        char* home = getenv("HOME");
         if(!home) {
             abort();
         }
@@ -54,12 +60,15 @@ void config_home(char *buf, size_t len) {
     }
 }
 
-void config_dir(char *buf, size_t len) {
+void
+config_dir(char* buf,
+           size_t len) {
     config_home(buf, len);
     strlcat(buf, "/simplestroke", len);
 }
 
-void exec_man_for_subcommand(const char *subcommand) {
+void
+exec_man_for_subcommand(const char* subcommand) {
     char buf[64];
 
     char* argv[3];
@@ -84,7 +93,8 @@ void exec_man_for_subcommand(const char *subcommand) {
    the directory `dir`, if it does not exist.
    Returns true if/after the dir exists, false otherwise.
    Also returns false if `dir` points to a file. */
-bool mkdirs(char *dir) {
+bool
+mkdirs(char* dir) {
     struct stat s;
     if(stat(dir, &s) == 0) {
         return S_ISDIR(s.st_mode);
@@ -93,7 +103,7 @@ bool mkdirs(char *dir) {
         return false;
     }
 
-    char *argv[4] = { "mkdir", "-p", dir, NULL };
+    char* argv[4] = { "mkdir", "-p", dir, NULL };
 
     pid_t child = fork();
     if(child == 0) {

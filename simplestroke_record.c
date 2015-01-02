@@ -30,33 +30,29 @@
 #include "db.h"
 #include "util.h"
 
-/* Returns a stroke. When there was a problem print an error message and exit */
-stroke_t record_stroke_or_exit() {
-    stroke_t stroke;
-    const char *error = record_stroke(&stroke);
-    if(error) {
-        fprintf(stderr, "record_stroke: %s\n", error);
-        exit(EXIT_FAILURE);
-    }
-    return stroke;
-}
-
-int simplestroke_record(const int argc, char** argv) {
+int
+simplestroke_record(const int argc,
+                    char** argv) {
     struct option longopts[] = {
         { "help",  no_argument, NULL, 'h' },
-        { "title", required_argument, NULL, 't' },
+        { "description", required_argument, NULL, 'd' },
+        { "command", required_argument, NULL, 'c' },
         { NULL, 0, NULL, 0 }
     };
 
     if(argc == 1)
         exec_man_for_subcommand(argv[0]);
 
-    char *title = NULL;
+    char* description = NULL;
+    char* command = NULL;
     int ch;
-    while((ch = getopt_long(argc, argv, "ht:", longopts, NULL)) != -1) {
+    while((ch = getopt_long(argc, argv, "hd:c:", longopts, NULL)) != -1) {
         switch(ch) {
-        case 't':
-            title = optarg;
+        case 'd':
+            description = optarg;
+            break;
+        case 'c':
+            command = optarg;
             break;
         case 'h':
             exec_man_for_subcommand(argv[0]);
@@ -68,19 +64,43 @@ int simplestroke_record(const int argc, char** argv) {
         }
     }
 
-    if(title == NULL) {
-        fprintf(stderr, "WARNING: Using title <unnamed>\n");
-        title = "<unnamed>";
+    if(command == NULL) {
+        fprintf(stderr, "Missing argument --command!\n");
+        return EXIT_FAILURE;
     }
 
-    const char *error;
-    Database db = database_open(&error);
-    if(error != NULL) {
+    if(description == NULL) {
+        fprintf(stderr, "WARNING: Using description <no description>\n");
+        description = "<no description>";
+        return EXIT_FAILURE;
+    }
+
+    const char* error;
+    Database db;
+    error = database_open(&db);
+    if(error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
+    printf("Draw your stroke now and click a mouse button when you are finished. Press C-c to abort.\n");
+    stroke_t stroke;
+    error = record_stroke(&stroke);
+    if(error) {
+        fprintf(stderr, "record_stroke: %s\n", error);
+        return EXIT_FAILURE;
+    }
+
+    error = database_add_stroke(db, &stroke, description, command);
+    if(error) {
+        fprintf(stderr, "Could not store stroke in database: %s\n", error);
+        database_close(db);
+        return EXIT_FAILURE;
+    }
+
     database_close(db);
+
+    printf("Success!\n");
 
     return EXIT_SUCCESS;
 }

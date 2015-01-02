@@ -18,10 +18,10 @@
 
 #include "util.h"
 
-extern int simplestroke_record(const int argc, const char **argv);
+extern int simplestroke_record(const int argc, const char** argv);
 
 typedef struct {
-    char *name;
+    char* name;
     int (*handler)(const int, const char**);
 } Subcommand;
 
@@ -29,7 +29,9 @@ static Subcommand subcommands[] = {
     { "record", simplestroke_record },
 };
 
-int main(const int argc, const char **argv) {
+int
+main(const int argc,
+     const char** argv) {
     if(argc > 1) {
         const int n = sizeof(subcommands)/sizeof(Subcommand);
         for(int i = 0; i < n; i++) {
@@ -41,8 +43,6 @@ int main(const int argc, const char **argv) {
     }
 
     exec_man_for_subcommand(NULL);
-
-    //fprintf(stderr, "Usage: %s <keycode> <mousebutton>\n", argv[0]);
 
     return EXIT_FAILURE;
 }

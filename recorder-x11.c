@@ -26,16 +26,16 @@
 #include "recorder-x11.h"
 
 typedef struct {
-    Display *control;
-    Display *data;
-    XRecordRange *range;
+    Display* control;
+    Display* data;
+    XRecordRange* range;
     XRecordContext context;
 
     bool track;
     INT16 x;
     INT16 y;
 
-    stroke_t *stroke;
+    stroke_t* stroke;
 } RecorderState;
 
 
@@ -43,7 +43,8 @@ typedef struct {
  * Track the mouse
  */
 
-void record_cleanup(const RecorderState *state) {
+void
+record_cleanup(const RecorderState* state) {
     if(!state) {
         return;
     }
@@ -65,10 +66,11 @@ void record_cleanup(const RecorderState *state) {
     }
 }
 
-void record_callback(XPointer closure, XRecordInterceptData *record_data) {
-    RecorderState *state = (RecorderState*)closure;
+void
+record_callback(XPointer closure, XRecordInterceptData* record_data) {
+    RecorderState* state = (RecorderState*)closure;
     // the data field can be treated as an xEvent as defined in X11/Xproto.h
-    const xEvent *event = (xEvent*)record_data->data;
+    const xEvent* event = (xEvent*)record_data->data;
 
     if(record_data->category == XRecordFromServer) {
         switch(event->u.u.type) {
@@ -97,7 +99,12 @@ void record_callback(XPointer closure, XRecordInterceptData *record_data) {
     XRecordFreeData(record_data);
 }
 
-const char* record_stroke(stroke_t *stroke) {
+const char*
+record_stroke(/* out */ stroke_t* stroke) {
+    if(!stroke) {
+        return "stroke was null!";
+    }
+
     RecorderState state;
 
     state.track = true;

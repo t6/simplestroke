@@ -17,14 +17,17 @@
 #define __DB_H__
 
 #include <sqlite3.h>
-#include <stdbool.h>
+
+#include "stroke.h"
 
 typedef struct {
     sqlite3* db;
+    sqlite3_stmt* insert_stroke_stmt;
 } Database;
 
-void database_uri(char *path, size_t len);
-Database database_open(const char **error);
-bool database_close(Database db);
+void database_uri(char* path, size_t len);
+const char* database_open(/* out */ Database* db);
+const char* database_close(Database db);
+const char* database_add_stroke(Database db, stroke_t* stroke, const char* description, const char* command);
 
 #endif

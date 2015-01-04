@@ -88,14 +88,15 @@ simplestroke_detect(const int argc,
         return EXIT_FAILURE;
     }
 
-    GestureSelectionState state;
+    GestureSelectionState state = { .stroke = {},
+                                    .command = {},
+                                    .description = {},
+                                    .score = stroke_infinity };
     error = record_stroke(&state.stroke);
     if(error) {
         fprintf(stderr, "Failed recording gesture: %s\n", error);
         return EXIT_FAILURE;
     }
-
-    state.score = stroke_infinity;
 
     error = database_load_gestures(db, load_gestures_cb, &state);
     if(error) {

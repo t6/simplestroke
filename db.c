@@ -104,7 +104,7 @@ database_close(Database db) {
         sqlite3_finalize(db.load_gestures_stmt);
     }
 
-    const int status = sqlite3_close(db.db);
+    const int status = sqlite3_close_v2(db.db);
     if(SQLITE_OK == status) {
         db.db = NULL;
         return NULL;

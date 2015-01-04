@@ -2,7 +2,7 @@ CC = clang
 
 # pkg-config packages
 PKGS = x11 xext xtst sqlite3
-CFLAGS = -fPIC -g -std=c11 -Wall # -D_POSIX_C_SOURCE=200809L
+CFLAGS = -fPIC -g -std=c11 -Wall -Wextra
 CFLAGS += `pkg-config --cflags ${PKGS}`
 LDFLAGS = -lm `pkg-config --libs ${PKGS}`
 

@@ -80,9 +80,9 @@ record_callback(XPointer closure, XRecordInterceptData* record_data) {
         case MotionNotify:
             state->x = event->u.keyButtonPointer.rootX;
             state->y = event->u.keyButtonPointer.rootY;
-            //state->time = event->u.keyButtonPointer.time;
             break;
         default:
+            XRecordFreeData(record_data);
             return;
         }
 
@@ -105,26 +105,25 @@ record_stroke(/* out */ stroke_t* stroke) {
         return "stroke was null!";
     }
 
-    RecorderState state;
-
-    state.track = true;
-    state.stroke = stroke;
+    RecorderState state = { .control = XOpenDisplay(NULL),
+                            .data = XOpenDisplay(NULL),
+                            .range = XRecordAllocRange(),
+                            .track = true,
+                            .stroke = stroke,
+                            .context = 0,
+                            .x = 0,
+                            .y = 0 };
 
     // See http://www.x.org/docs/Xext/recordlib.pdf
-
-    state.control = XOpenDisplay(NULL);
     if(!state.control) {
         record_cleanup(&state);
         return "Could not open control display";
     }
-
-    state.data = XOpenDisplay(NULL);
     if(!state.data) {
         record_cleanup(&state);
         return "Could not open data display";
     }
 
-    state.range = XRecordAllocRange();
     if(!state.range) {
         record_cleanup(&state);
         return "Could not create record range";

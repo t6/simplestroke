@@ -86,7 +86,7 @@ simplestroke_new(const int argc,
     }
 
     const char* error;
-    Database db;
+    Database db = {};
     error = database_open(&db);
     if(error) {
         fprintf(stderr, "%s\n", error);
@@ -108,7 +108,7 @@ simplestroke_new(const int argc,
         printf("Draw your gesture now and click a mouse button when you are finished. Press C-c to abort.\n");
     }
 
-    stroke_t stroke;
+    stroke_t stroke = {};
     error = record_stroke(&stroke);
     if(error) {
         fprintf(stderr, "Failed recording gesture: %s\n", error);

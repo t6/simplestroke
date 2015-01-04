@@ -62,10 +62,10 @@ stroke_finish(stroke_t *s) {
 
     double minX = s->p[0].x, minY = s->p[0].y, maxX = minX, maxY = minY;
     for(int i = 1; i <= n; i++) {
-        minX = min(s->p[i].x, minX); // if (s->p[i].x < minX) minX = s->p[i].x;
-        maxX = max(s->p[i].x, maxX); // if (s->p[i].x > maxX) maxX = s->p[i].x;
-        minY = min(s->p[i].y, minY); // if (s->p[i].y < minY) minY = s->p[i].y;
-        maxY = max(s->p[i].y, maxY); // if (s->p[i].y > maxY) maxY = s->p[i].y;
+        minX = min(s->p[i].x, minX);
+        maxX = max(s->p[i].x, maxX);
+        minY = min(s->p[i].y, minY);
+        maxY = max(s->p[i].y, maxY);
     }
 
     const double scaleX = maxX - minX;

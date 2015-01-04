@@ -31,7 +31,10 @@
 const double stroke_infinity = 0.2;
 static const double epsilon = 0.000001;
 
-void stroke_add_point(stroke_t *s, const double x, const double y) {
+void
+stroke_add_point(stroke_t *s,
+                 const double x,
+                 const double y) {
     assert(MAX_STROKE_POINTS > s->n);
     assert(!s->is_finished);
     s->p[s->n].x = x;
@@ -39,7 +42,8 @@ void stroke_add_point(stroke_t *s, const double x, const double y) {
     s->n++;
 }
 
-void stroke_finish(stroke_t *s) {
+void
+stroke_finish(stroke_t *s) {
     if(s->is_finished) return;
 
     s->is_finished = true;
@@ -79,41 +83,48 @@ void stroke_finish(stroke_t *s) {
     }
 }
 
-double angle_difference(const double alpha, const double beta) {
+double
+angle_difference(const double alpha,
+                 const double beta) {
     double d = alpha - beta;
-    if(d < -1.0)
-        d += 2.0;
-    else if(d > 1.0)
-        d -= 2.0;
-    return d;
+    if(d < -1.0) {
+        return d + 2.0;
+    } else if(d > 1.0) {
+        return d - 2.0;
+    } else {
+        return d;
+    }
 }
 
-double stroke_angle_difference(const stroke_t *a,
-                               const stroke_t *b,
-                               const int i,
-                               const int j) {
+double
+stroke_angle_difference(const stroke_t *a,
+                        const stroke_t *b,
+                        const int i,
+                        const int j) {
     assert(a);
     assert(b);
     return fabs(angle_difference(a->p[i].alpha, b->p[j].alpha));
 }
 
-void step(const stroke_t *a,
-          const stroke_t *b,
-          const int N,
-          double *dist,
-          int *prev_x,
-          int *prev_y,
-          const int x,
-          const int y,
-          const double tx,
-          const double ty,
-          int *k,
-          const int x2,
-          const int y2) {
+void
+step(const stroke_t *a,
+     const stroke_t *b,
+     const int N,
+     double *dist,
+     int *prev_x,
+     int *prev_y,
+     const int x,
+     const int y,
+     const double tx,
+     const double ty,
+     int *k,
+     const int x2,
+     const int y2) {
     const double dtx = a->p[x2].t - tx;
     const double dty = b->p[y2].t - ty;
-    if(dtx >= dty * 2.2 || dty >= dtx * 2.2 || dtx < epsilon || dty < epsilon)
+    if(dtx >= dty * 2.2 || dty >= dtx * 2.2 || dtx < epsilon || dty < epsilon) {
         return;
+    }
     (*k)++;
 
     double d = 0.0;
@@ -126,21 +137,25 @@ void step(const stroke_t *a,
         const double ad = pow(angle_difference(a->p[i].alpha, b->p[j].alpha), 2);
         double next_t = next_tx < next_ty ? next_tx : next_ty;
         const bool done = next_t >= 1.0 - epsilon;
-        if(done)
+        if(done) {
             next_t = 1.0;
+        }
         d += (next_t - cur_t)*ad;
-        if(done)
+        if(done) {
             break;
+        }
         cur_t = next_t;
-        if(next_tx < next_ty)
+        if(next_tx < next_ty) {
             next_tx = (a->p[++i+1].t - tx) / dtx;
-        else
+        } else {
             next_ty = (b->p[++j+1].t - ty) / dty;
+        }
     }
 
     const double new_dist = dist[x*N+y] + d * (dtx + dty);
-    if(new_dist >= dist[x2*N+y2])
+    if(new_dist >= dist[x2*N+y2]) {
         return;
+    }
 
     prev_x[x2*N+y2] = x;
     prev_y[x2*N+y2] = y;
@@ -151,7 +166,11 @@ void step(const stroke_t *a,
  * approximation) of the integral over square of the angle difference among
  * (roughly) all reparametrizations whose slope is always between 1/2 and 2.
  */
-double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x, int *path_y) {
+double
+stroke_compare(const stroke_t *a,
+               const stroke_t *b,
+               int *path_x,
+               int *path_y) {
     assert(a);
     assert(b);
 
@@ -164,16 +183,19 @@ double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x, int *pa
     int prev_x[MAX_STROKE_POINTS * MAX_STROKE_POINTS];
     int prev_y[MAX_STROKE_POINTS * MAX_STROKE_POINTS];
 
-    for(int i = 0; i < m; i++)
-        for(int j = 0; j < n; j++)
-            dist[i*N+j] = stroke_infinity;
-    dist[M*N-1] = stroke_infinity;
+    for(int i = 0; i < m; i++) {
+        for(int j = 0; j < n; j++) {
+            dist[i*N + j] = stroke_infinity;
+        }
+    }
+    dist[M*N - 1] = stroke_infinity;
     dist[0] = 0.0;
 
     for(int x = 0; x < m; x++) {
         for(int y = 0; y < n; y++) {
-            if(dist[x*N+y] >= stroke_infinity)
+            if(dist[x*N + y] >= stroke_infinity) {
                 continue;
+            }
             const double tx  = a->p[x].t;
             const double ty  = b->p[y].t;
             int max_x = x;
@@ -181,27 +203,29 @@ double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x, int *pa
             int k = 0;
 
             while(k < 4) {
-                if(a->p[max_x+1].t - tx > b->p[max_y+1].t - ty) {
+                if(a->p[max_x + 1].t - tx > b->p[max_y + 1].t - ty) {
                     max_y++;
                     if(max_y == n) {
                         step(a, b, N, dist, prev_x, prev_y, x, y, tx, ty, &k, m, n);
                         break;
                     }
-                    for(int x2 = x+1; x2 <= max_x; x2++)
+                    for(int x2 = x + 1; x2 <= max_x; x2++) {
                         step(a, b, N, dist, prev_x, prev_y, x, y, tx, ty, &k, x2, max_y);
+                    }
                 } else {
                     max_x++;
                     if(max_x == m) {
                         step(a, b, N, dist, prev_x, prev_y, x, y, tx, ty, &k, m, n);
                         break;
                     }
-                    for(int y2 = y+1; y2 <= max_y; y2++)
+                    for(int y2 = y + 1; y2 <= max_y; y2++) {
                         step(a, b, N, dist, prev_x, prev_y, x, y, tx, ty, &k, max_x, y2);
+                    }
                 }
             }
         }
     }
-    const double cost = dist[M*N-1];
+    const double cost = dist[M*N - 1];
     if(path_x && path_y) {
         if(cost < stroke_infinity) {
             int x = m;
@@ -209,8 +233,8 @@ double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x, int *pa
             int k = 0;
             while(x || y) {
                 const int old_x = x;
-                x = prev_x[x*N+y];
-                y = prev_y[old_x*N+y];
+                x = prev_x[x*N + y];
+                y = prev_y[old_x*N + y];
                 path_x[k] = x;
                 path_y[k] = y;
                 k++;

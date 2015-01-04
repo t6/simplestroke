@@ -19,6 +19,7 @@
 #include "util.h"
 
 extern int simplestroke_new(const int argc, const char** argv);
+extern int simplestroke_detect(const int argc, const char** argv);
 
 typedef struct {
     char* name;
@@ -27,6 +28,7 @@ typedef struct {
 
 static Subcommand subcommands[] = {
     { "new", simplestroke_new },
+    { "detect", simplestroke_detect },
 };
 
 int

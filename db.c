@@ -21,10 +21,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sqlite3.h>
+#include <assert.h>
 
 #include "util.h"
 #include "db.h"
-#include "stroke.h"
 
 static const char* schema =
     "CREATE TABLE IF NOT EXISTS gesture (                               \
@@ -32,13 +32,15 @@ static const char* schema =
          time INTEGER NOT NULL,                                         \
          description TEXT NOT NULL,                                     \
          command TEXT NOT NULL,                                         \
-         npoints INTEGER NOT NULL,                                      \
          points BLOB NOT NULL                                           \
     );";
 
 static const char* insert_gesture_sql =
-    "INSERT INTO gesture (time, description, command, npoints, points)  \
-        VALUES (?, ?, ?, ?, ?);";
+    "INSERT INTO gesture (time, description, command, points)  \
+        VALUES (?, ?, ?, ?);";
+
+static const char* load_gestures_sql =
+    "SELECT points, description, command FROM gesture;";
 
 /* Opens the database, creating it and the configuration directory if necessary.
    Returns the database handle and sets error to NULL if successful, otherwise
@@ -79,18 +81,34 @@ database_open(/* out */ Database* db) {
         return error;
     }
 
+    if(SQLITE_OK != sqlite3_prepare_v2(db->db,
+                                       load_gestures_sql,
+                                       -1,
+                                       &db->load_gestures_stmt,
+                                       NULL)) {
+        const char* error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
+        sqlite3_finalize(db->insert_gesture_stmt);
+        sqlite3_close(db->db);
+        return error;
+    }
+
     return NULL;
 }
 
 const char*
 database_close(Database db) {
-    sqlite3_finalize(db.insert_gesture_stmt);
+    if(db.insert_gesture_stmt) {
+        sqlite3_finalize(db.insert_gesture_stmt);
+    }
+    if(db.load_gestures_stmt) {
+        sqlite3_finalize(db.load_gestures_stmt);
+    }
+
     const int status = sqlite3_close(db.db);
     if(SQLITE_OK == status) {
         db.db = NULL;
         return NULL;
     }
-
     return sqlite3_errstr(status);
 }
 
@@ -99,6 +117,7 @@ database_add_gesture(Database db,
                      stroke_t* stroke,
                      const char* description,
                      const char* command) {
+    sqlite3_clear_bindings(db.insert_gesture_stmt);
     sqlite3_reset(db.insert_gesture_stmt);
 
     if(SQLITE_OK != sqlite3_bind_int(db.insert_gesture_stmt,
@@ -115,18 +134,50 @@ database_add_gesture(Database db,
                                        SQLITE_STATIC)) {
         return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
-    if(SQLITE_OK != sqlite3_bind_int(db.insert_gesture_stmt,
-                                      4, stroke->n)) {
-        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
-    }
     if(SQLITE_OK != sqlite3_bind_blob(db.insert_gesture_stmt,
-                                      5, stroke->p, sizeof(double)*stroke->n,
+                                      4, stroke->p, sizeof(point)*stroke->n,
                                       SQLITE_STATIC)) {
         return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
+
+    sqlite3_reset(db.insert_gesture_stmt);
 
     if(SQLITE_DONE != sqlite3_step(db.insert_gesture_stmt)) {
         return "step was not done?";
     }
     return NULL;
+}
+
+const char*
+database_load_gestures(Database db,
+                       LoadGesturesCallback cb,
+                       const void* user_data) {
+    sqlite3_reset(db.load_gestures_stmt);
+
+    while(true) {
+        int status = sqlite3_step(db.load_gestures_stmt);
+        switch(status) {
+        case SQLITE_DONE:
+            sqlite3_reset(db.load_gestures_stmt);
+            return NULL;
+        case SQLITE_ROW:
+            assert(sqlite3_column_type(db.load_gestures_stmt, 0)
+                   == SQLITE_BLOB);
+            assert(sqlite3_column_type(db.load_gestures_stmt, 1)
+                   == SQLITE_TEXT);
+            assert(sqlite3_column_type(db.load_gestures_stmt, 2)
+                   == SQLITE_TEXT);
+            stroke_t stroke;
+            point *points = (point*)sqlite3_column_blob(db.load_gestures_stmt, 0);
+            int n = sqlite3_column_bytes(db.load_gestures_stmt, 0);
+            memcpy(stroke.p, points, n);
+            stroke.n = n/sizeof(point);
+            const char* description = (const char*)sqlite3_column_text(db.load_gestures_stmt, 1);
+            const char* command = (const char*)sqlite3_column_text(db.load_gestures_stmt, 2);
+            cb(&stroke, description, command, user_data);
+            break;
+        default:
+            return sqlite3_errstr(status);
+        }
+    }
 }

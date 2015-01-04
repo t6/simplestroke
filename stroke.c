@@ -157,9 +157,9 @@ step(const stroke_t *a,
         return;
     }
 
-    prev_x[x2*N+y2] = x;
-    prev_y[x2*N+y2] = y;
-    dist[x2*N+y2] = new_dist;
+    prev_x[x2*N + y2] = x;
+    prev_y[x2*N + y2] = y;
+    dist[x2*N + y2] = new_dist;
 }
 
 /* To compare two gestures, we use dynamic programming to minimize (an
@@ -179,9 +179,9 @@ stroke_compare(const stroke_t *a,
     const int m = M - 1;
     const int n = N - 1;
 
-    double dist[MAX_STROKE_POINTS * MAX_STROKE_POINTS];
-    int prev_x[MAX_STROKE_POINTS * MAX_STROKE_POINTS];
-    int prev_y[MAX_STROKE_POINTS * MAX_STROKE_POINTS];
+    double dist[M * N];
+    int prev_x[M * N];
+    int prev_y[M * N];
 
     for(int i = 0; i < m; i++) {
         for(int j = 0; j < n; j++) {

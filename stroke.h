@@ -23,18 +23,18 @@
 #define MAX_STROKE_POINTS 512
 #endif
 
-struct point {
+typedef struct {
     double x;
     double y;
     double t;
     double dt;
     double alpha;
-};
+} point;
 
 typedef struct {
     int n;
     bool is_finished;
-    struct point p[MAX_STROKE_POINTS];
+    point p[MAX_STROKE_POINTS];
 } stroke_t;
 
 void stroke_add_point(stroke_t *stroke, double x, double y);

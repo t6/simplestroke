@@ -124,3 +124,18 @@ mkdirs(char* dir) {
 
     return true;
 }
+
+void
+exec_commandline(const char* commandline) {
+    char* argv[4];
+    argv[0] = "/bin/sh";
+    argv[1] = "-c";
+    argv[2] = (char *)commandline;
+    argv[3] = NULL;
+
+    execv("/bin/sh", argv);
+
+    // execv returned => an error occurred...
+    perror("execvp");
+    abort();
+}

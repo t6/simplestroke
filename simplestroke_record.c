@@ -37,6 +37,7 @@ simplestroke_record(const int argc,
         { "help",  no_argument, NULL, 'h' },
         { "description", required_argument, NULL, 'd' },
         { "command", required_argument, NULL, 'c' },
+        { "wait", optional_argument, NULL, 'w' },
         { NULL, 0, NULL, 0 }
     };
 
@@ -45,9 +46,19 @@ simplestroke_record(const int argc,
 
     char* description = NULL;
     char* command = NULL;
+    // wait for 2 seconds before recording by default
+    const long default_wait = 2;
+    long wait = default_wait;
     int ch;
-    while((ch = getopt_long(argc, argv, "hd:c:", longopts, NULL)) != -1) {
+    while((ch = getopt_long(argc, argv, "hw:d:c:", longopts, NULL)) != -1) {
         switch(ch) {
+        case 'w':
+            wait = strtol(optarg, NULL, 10);
+            if(errno == EINVAL || errno == ERANGE || wait < 0) {
+                fprintf(stderr, "--wait expects a positive integer, falling back to default of %li seconds!\n", default_wait);
+                wait = default_wait;
+            }
+            break;
         case 'd':
             description = optarg;
             break;
@@ -65,13 +76,12 @@ simplestroke_record(const int argc,
     }
 
     if(command == NULL) {
-        fprintf(stderr, "Missing argument --command!\n");
+        fprintf(stderr, "Missing argument: --command!\n");
         return EXIT_FAILURE;
     }
 
     if(description == NULL) {
-        fprintf(stderr, "WARNING: Using description <no description>\n");
-        description = "<no description>";
+        fprintf(stderr, "Missing argument: --description!\n");
         return EXIT_FAILURE;
     }
 
@@ -83,11 +93,23 @@ simplestroke_record(const int argc,
         return EXIT_FAILURE;
     }
 
+    // wait for X seconds, then record
+    const char* msg = "Recording stroke in %i seconds (press C-c to abort)...";
+    printf(msg, wait);
+    fflush(stdout);
+    for(long i = wait - 1; i >= 0; i--) {
+        sleep(1);
+        printf("\r");
+        printf(msg, i);
+        fflush(stdout);
+    }
+    printf("\n");
     printf("Draw your stroke now and click a mouse button when you are finished. Press C-c to abort.\n");
+
     stroke_t stroke;
     error = record_stroke(&stroke);
     if(error) {
-        fprintf(stderr, "record_stroke: %s\n", error);
+        fprintf(stderr, "Failed recording stroke: %s\n", error);
         return EXIT_FAILURE;
     }
 

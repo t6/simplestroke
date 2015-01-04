@@ -94,17 +94,19 @@ simplestroke_new(const int argc,
     }
 
     // wait for X seconds, then record
-    const char* msg = "Recording gesture in %i seconds (press C-c to abort)...";
-    printf(msg, wait);
-    fflush(stdout);
-    for(long i = wait - 1; i >= 0; i--) {
-        sleep(1);
-        printf("\r");
-        printf(msg, i);
+    if(wait > 0) {
+        const char* msg = "Recording gesture in %i seconds (press C-c to abort)...";
+        printf(msg, wait);
         fflush(stdout);
+        for(long i = wait - 1; i >= 0; i--) {
+            sleep(1);
+            printf("\r");
+            printf(msg, i);
+            fflush(stdout);
+        }
+        printf("\n");
+        printf("Draw your gesture now and click a mouse button when you are finished. Press C-c to abort.\n");
     }
-    printf("\n");
-    printf("Draw your gesture now and click a mouse button when you are finished. Press C-c to abort.\n");
 
     stroke_t stroke;
     error = record_stroke(&stroke);

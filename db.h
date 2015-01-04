@@ -22,12 +22,12 @@
 
 typedef struct {
     sqlite3* db;
-    sqlite3_stmt* insert_stroke_stmt;
+    sqlite3_stmt* insert_gesture_stmt;
 } Database;
 
 void database_uri(char* path, size_t len);
 const char* database_open(/* out */ Database* db);
 const char* database_close(Database db);
-const char* database_add_stroke(Database db, stroke_t* stroke, const char* description, const char* command);
+const char* database_add_gesture(Database db, stroke_t* stroke, const char* description, const char* command);
 
 #endif

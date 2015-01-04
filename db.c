@@ -27,7 +27,7 @@
 #include "stroke.h"
 
 static const char* schema =
-    "CREATE TABLE IF NOT EXISTS stroke (                                \
+    "CREATE TABLE IF NOT EXISTS gesture (                               \
          id INTEGER PRIMARY KEY,                                        \
          time INTEGER NOT NULL,                                         \
          description TEXT NOT NULL,                                     \
@@ -36,8 +36,8 @@ static const char* schema =
          points BLOB NOT NULL                                           \
     );";
 
-static const char* insert_stroke_sql =
-    "INSERT INTO stroke (time, description, command, npoints, points)   \
+static const char* insert_gesture_sql =
+    "INSERT INTO gesture (time, description, command, npoints, points)  \
         VALUES (?, ?, ?, ?, ?);";
 
 /* Opens the database, creating it and the configuration directory if necessary.
@@ -56,25 +56,25 @@ database_open(/* out */ Database* db) {
     }
     strlcat(path, "/simplestroke.sqlite", sizeof(path));
 
-    if(SQLITE_OK != sqlite3_open_v2(path,
-                                    &db->db,
-                                    SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
-                                    NULL)) {
-        return sqlite3_errmsg(db->db);
+    const int status = sqlite3_open_v2(path,
+                                       &db->db,
+                                       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+                                       NULL);
+    if(SQLITE_OK != status) {
+        return sqlite3_errstr(status);
     }
 
-    char* error;
-    if(SQLITE_OK != sqlite3_exec(db->db, schema, NULL, NULL, &error)) {
+    if(SQLITE_OK != sqlite3_exec(db->db, schema, NULL, NULL, NULL)) {
         sqlite3_close(db->db);
-        return error;
+        return "could not create schema";
     }
 
     if(SQLITE_OK != sqlite3_prepare_v2(db->db,
-                                       insert_stroke_sql,
+                                       insert_gesture_sql,
                                        -1,
-                                       &db->insert_stroke_stmt,
+                                       &db->insert_gesture_stmt,
                                        NULL)) {
-        const char *error = sqlite3_errmsg(db->db);
+        const char* error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
         sqlite3_close(db->db);
         return error;
     }
@@ -84,47 +84,48 @@ database_open(/* out */ Database* db) {
 
 const char*
 database_close(Database db) {
-    sqlite3_finalize(db.insert_stroke_stmt);
-    if(sqlite3_close(db.db) == SQLITE_OK) {
+    sqlite3_finalize(db.insert_gesture_stmt);
+    const int status = sqlite3_close(db.db);
+    if(SQLITE_OK == status) {
         db.db = NULL;
         return NULL;
     }
 
-    return sqlite3_errmsg(db.db);
+    return sqlite3_errstr(status);
 }
 
 const char *
-database_add_stroke(Database db,
-                    stroke_t* stroke,
-                    const char* description,
-                    const char* command) {
-    sqlite3_reset(db.insert_stroke_stmt);
+database_add_gesture(Database db,
+                     stroke_t* stroke,
+                     const char* description,
+                     const char* command) {
+    sqlite3_reset(db.insert_gesture_stmt);
 
-    if(SQLITE_OK != sqlite3_bind_int(db.insert_stroke_stmt,
-                                      1, time(NULL))) {
-        return sqlite3_errmsg(db.db);
+    if(SQLITE_OK != sqlite3_bind_int(db.insert_gesture_stmt,
+                                     1, time(NULL))) {
+        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
-    if(SQLITE_OK != sqlite3_bind_text(db.insert_stroke_stmt,
+    if(SQLITE_OK != sqlite3_bind_text(db.insert_gesture_stmt,
                                       2, description, -1,
                                       SQLITE_STATIC)) {
-        return sqlite3_errmsg(db.db);
+        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
-    if(SQLITE_OK != sqlite3_bind_text(db.insert_stroke_stmt,
+    if(SQLITE_OK != sqlite3_bind_text(db.insert_gesture_stmt,
                                        3, command, -1,
                                        SQLITE_STATIC)) {
-        return sqlite3_errmsg(db.db);
+        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
-    if(SQLITE_OK != sqlite3_bind_int(db.insert_stroke_stmt,
+    if(SQLITE_OK != sqlite3_bind_int(db.insert_gesture_stmt,
                                       4, stroke->n)) {
-        return sqlite3_errmsg(db.db);
+        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
-    if(SQLITE_OK != sqlite3_bind_blob(db.insert_stroke_stmt,
+    if(SQLITE_OK != sqlite3_bind_blob(db.insert_gesture_stmt,
                                       5, stroke->p, sizeof(double)*stroke->n,
                                       SQLITE_STATIC)) {
-        return sqlite3_errmsg(db.db);
+        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
     }
 
-    if(SQLITE_DONE != sqlite3_step(db.insert_stroke_stmt)) {
+    if(SQLITE_DONE != sqlite3_step(db.insert_gesture_stmt)) {
         return "step was not done?";
     }
     return NULL;

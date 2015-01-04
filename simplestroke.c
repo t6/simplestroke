@@ -18,7 +18,7 @@
 
 #include "util.h"
 
-extern int simplestroke_record(const int argc, const char** argv);
+extern int simplestroke_new(const int argc, const char** argv);
 
 typedef struct {
     char* name;
@@ -26,7 +26,7 @@ typedef struct {
 } Subcommand;
 
 static Subcommand subcommands[] = {
-    { "record", simplestroke_record },
+    { "new", simplestroke_new },
 };
 
 int

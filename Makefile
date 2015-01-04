@@ -11,7 +11,7 @@ SRC = recorder-x11.c \
 	stroke.c \
 	util.c \
 	simplestroke.c \
-	simplestroke_record.c
+	simplestroke_new.c
 
 all: options simplestroke
 

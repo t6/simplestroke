@@ -31,8 +31,8 @@
 #include "util.h"
 
 int
-simplestroke_record(const int argc,
-                    char** argv) {
+simplestroke_new(const int argc,
+                 char** argv) {
     struct option longopts[] = {
         { "help",  no_argument, NULL, 'h' },
         { "description", required_argument, NULL, 'd' },
@@ -94,7 +94,7 @@ simplestroke_record(const int argc,
     }
 
     // wait for X seconds, then record
-    const char* msg = "Recording stroke in %i seconds (press C-c to abort)...";
+    const char* msg = "Recording gesture in %i seconds (press C-c to abort)...";
     printf(msg, wait);
     fflush(stdout);
     for(long i = wait - 1; i >= 0; i--) {
@@ -104,18 +104,19 @@ simplestroke_record(const int argc,
         fflush(stdout);
     }
     printf("\n");
-    printf("Draw your stroke now and click a mouse button when you are finished. Press C-c to abort.\n");
+    printf("Draw your gesture now and click a mouse button when you are finished. Press C-c to abort.\n");
 
     stroke_t stroke;
     error = record_stroke(&stroke);
     if(error) {
-        fprintf(stderr, "Failed recording stroke: %s\n", error);
+        fprintf(stderr, "Failed recording gesture: %s\n", error);
+        database_close(db);
         return EXIT_FAILURE;
     }
 
-    error = database_add_stroke(db, &stroke, description, command);
+    error = database_add_gesture(db, &stroke, description, command);
     if(error) {
-        fprintf(stderr, "Could not store stroke in database: %s\n", error);
+        fprintf(stderr, "Could not store gesture in database: %s\n", error);
         database_close(db);
         return EXIT_FAILURE;
     }

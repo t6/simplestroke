@@ -20,6 +20,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/param.h>
 
 #include "stroke.h"
 #include "util.h"
@@ -62,10 +63,10 @@ stroke_finish(stroke_t *s) {
 
     double minX = s->p[0].x, minY = s->p[0].y, maxX = minX, maxY = minY;
     for(int i = 1; i <= n; i++) {
-        minX = min(s->p[i].x, minX);
-        maxX = max(s->p[i].x, maxX);
-        minY = min(s->p[i].y, minY);
-        maxY = max(s->p[i].y, maxY);
+        minX = MIN(s->p[i].x, minX);
+        maxX = MAX(s->p[i].x, maxX);
+        minY = MIN(s->p[i].y, minY);
+        maxY = MAX(s->p[i].y, maxY);
     }
 
     const double scaleX = maxX - minX;

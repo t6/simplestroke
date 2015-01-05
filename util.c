@@ -27,18 +27,6 @@
 
 #include "util.h"
 
-double
-min(const double a,
-    const double b) {
-    return a < b ? a : b;
-}
-
-double
-max(const double a,
-    const double b) {
-    return a > b ? a : b;
-}
-
 void
 config_home(char* buf,
             size_t len) {

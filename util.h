@@ -19,8 +19,6 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 
-double min(double a, double b);
-double max(double a, double b);
 void config_home(char *buf, size_t len);
 void config_dir(char *buf, size_t len);
 void exec_man_for_subcommand(const char *subcommand);

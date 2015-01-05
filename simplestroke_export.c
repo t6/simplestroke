@@ -34,7 +34,8 @@ int
 simplestroke_export_as_svg(stroke_t *stroke,
                            char* description,
                            char* command,
-                           char* filename) {
+                           char* filename,
+                           char* color) {
     FILE* f = stdout;
     if(filename) {
         f = fopen(filename, "w");
@@ -46,7 +47,6 @@ simplestroke_export_as_svg(stroke_t *stroke,
 
     // TODO: need to escape ]]> in description and command (end of CDATA)
     //       by expanding ]]> to ]]]]><![CDATA[>
-    const char *color = "black";
     const int width = 250;
     const int height = 250;
     fprintf(f,
@@ -68,7 +68,7 @@ simplestroke_export_as_svg(stroke_t *stroke,
             description,
             command,
             width, height,
-            color);
+            color ? color : "black");
 
     for(int i = 0; i < stroke->n; i++) {
         fprintf(f, "%f,%f ", stroke->p[i].x, stroke->p[i].y);
@@ -87,13 +87,15 @@ simplestroke_export(const int argc,
         { "help",  no_argument, NULL, 'h' },
         { "id", required_argument, NULL, 'i' },
         { "file", required_argument, NULL, 'f'},
+        { "color", required_argument, NULL, 'c' },
         { NULL, 0, NULL, 0 }
     };
 
     int ch;
     int id = -1;
     char *filename = NULL;
-    while((ch = getopt_long(argc, argv, "hi:f:", longopts, NULL)) != -1) {
+    char *color = NULL;
+    while((ch = getopt_long(argc, argv, "hc:i:f:", longopts, NULL)) != -1) {
         switch(ch) {
         case 'h':
             exec_man_for_subcommand(argv[0]);
@@ -107,6 +109,9 @@ simplestroke_export(const int argc,
             break;
         case 'f':
             filename = optarg;
+            break;
+        case 'c':
+            color = optarg;
             break;
         case '?':
             return EXIT_FAILURE;
@@ -137,7 +142,7 @@ simplestroke_export(const int argc,
         return EXIT_FAILURE;
     }
 
-    int retval = simplestroke_export_as_svg(&stroke, description, command, filename);
+    int retval = simplestroke_export_as_svg(&stroke, description, command, filename, color);
 
     free(command);
     free(description);

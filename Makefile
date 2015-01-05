@@ -12,15 +12,16 @@ SRC = recorder-x11.c \
 	util.c \
 	simplestroke.c \
 	simplestroke_new.c \
-	simplestroke_detect.c
+	simplestroke_detect.c \
+	simplestroke_export.c
 
 all: options simplestroke
 
 options:
 	@echo simplestroke build options:
-	@echo "CC       = ${CC}"
-	@echo "CFLAGS   = ${CFLAGS}"
-	@echo "LDFLAGS  = ${LDFLAGS}"
+	@echo "CC      = ${CC}"
+	@echo "CFLAGS  = ${CFLAGS}"
+	@echo "LDFLAGS = ${LDFLAGS}"
 
 simplestroke: ${SRC:.c=.o}
 	@echo Linking simplestroke

@@ -24,14 +24,16 @@ typedef struct {
     sqlite3* db;
     sqlite3_stmt* insert_gesture_stmt;
     sqlite3_stmt* load_gestures_stmt;
+    sqlite3_stmt* load_gesture_with_id_stmt;
 } Database;
 
-typedef void (*LoadGesturesCallback)(stroke_t* stroke, const char* description, const char* command, const void* user_data);
+typedef void (*LoadGesturesCallback)(stroke_t* stroke, char* description, char* command, const void* user_data);
 
 void database_uri(char* path, size_t len);
 const char* database_open(/* out */ Database* db);
 const char* database_close(Database db);
 const char* database_add_gesture(Database db, stroke_t* stroke, const char* description, const char* command);
 const char* database_load_gestures(Database db, LoadGesturesCallback cb, const void* user_data);
+const char* database_load_gesture_with_id(Database db, int id, stroke_t* stroke, char** description, char** command);
 
 #endif

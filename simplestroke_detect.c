@@ -39,17 +39,18 @@ typedef struct {
 
 void
 load_gestures_cb(stroke_t *stroke,
-                 const char* description,
-                 const char* command,
+                 char* description,
+                 char* command,
                  const void* user_data) {
     GestureSelectionState *state = (GestureSelectionState*)user_data;
     double score = stroke_compare(stroke, &state->stroke, NULL, NULL);
     if(score < stroke_infinity) { // state->stroke has similarity with stroke
         if(score < state->score) { // check if there is a better candidate
             state->score = score;
-            // Need to copy command and description (owned by sqlite)
             strlcpy(state->command, command, sizeof(state->command));
             strlcpy(state->description, description, sizeof(state->description));
+            free(command);
+            free(description);
         }
     }
 }

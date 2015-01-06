@@ -1,8 +1,8 @@
-CC = clang
+CC = cc
 
 # pkg-config packages
 PKGS = x11 xext xtst sqlite3
-CFLAGS = -fPIC -g -std=c11 -Wall -Wextra
+CFLAGS = -g -std=c99 -Wall -Wextra
 CFLAGS += `pkg-config --cflags ${PKGS}`
 LDFLAGS = -lm `pkg-config --libs ${PKGS}`
 

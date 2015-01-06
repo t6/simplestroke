@@ -150,6 +150,7 @@ record_stroke(/* out */ stroke_t* stroke) {
 
     while(state.track) {
         XRecordProcessReplies(state.data);
+        usleep(50);
     }
 
     record_cleanup(&state);

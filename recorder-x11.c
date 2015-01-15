@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -74,6 +74,10 @@ record_callback(XPointer closure, XRecordInterceptData* record_data) {
 
     if(record_data->category == XRecordFromServer) {
         switch(event->u.u.type) {
+        case KeyRelease:
+            // TODO: This is problematic when simplestroke detect is started
+            // from an X terminal (the Return key pressed in the terminal fires
+            // the KeyRelease event) instead of from xbindkeys...
         case ButtonRelease:
             state->track = false;
             break;

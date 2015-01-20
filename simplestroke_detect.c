@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -37,7 +37,7 @@ typedef struct {
     double score;
 } GestureSelectionState;
 
-void
+static void
 load_gestures_cb(stroke_t *stroke,
                  char* description,
                  char* command,
@@ -81,9 +81,8 @@ simplestroke_detect(const int argc,
         }
     }
 
-    const char* error;
-    Database db;
-    error = database_open(&db);
+    const char* error = NULL;
+    Database* db = database_open(&error);
     if(error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;

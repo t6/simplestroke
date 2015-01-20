@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -85,9 +85,8 @@ simplestroke_new(const int argc,
         return EXIT_FAILURE;
     }
 
-    const char* error;
-    Database db = {};
-    error = database_open(&db);
+    const char* error = NULL;
+    Database *db = database_open(&error);
     if(error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;

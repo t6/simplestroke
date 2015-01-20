@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,6 +26,13 @@
 #include "util.h"
 #include "db.h"
 
+struct _Database {
+    sqlite3* db;
+    sqlite3_stmt* insert_gesture_stmt;
+    sqlite3_stmt* load_gestures_stmt;
+    sqlite3_stmt* load_gesture_with_id_stmt;
+};
+
 static const char* schema =
     "CREATE TABLE IF NOT EXISTS gesture (                               \
          id INTEGER PRIMARY KEY,                                        \
@@ -48,16 +55,18 @@ static const char* load_gesture_with_id_sql =
 /* Opens the database, creating it and the configuration directory if necessary.
    Returns the database handle and sets error to NULL if successful, otherwise
    error is set to an appropriate error message. */
-const char*
-database_open(/* out */ Database* db) {
-    if(!db) {
-        return "db was null";
-    }
+Database*
+database_open(/* out */ const char** error) {
+    assert(error);
+    Database *db = malloc(sizeof(Database));
+    assert(db);
 
     char path[MAXPATHLEN];
     config_dir(path, sizeof(path));
     if(!mkdirs(path)) {
-        return "Could not create config directory";
+        *error = "Could not create config directory";
+        free(db);
+        return NULL;
     }
     strlcat(path, "/simplestroke.sqlite", sizeof(path));
 
@@ -66,12 +75,16 @@ database_open(/* out */ Database* db) {
                                        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
                                        NULL);
     if(SQLITE_OK != status) {
-        return sqlite3_errstr(status);
+        *error = sqlite3_errstr(status);
+        free(db);
+        return NULL;
     }
 
     if(SQLITE_OK != sqlite3_exec(db->db, schema, NULL, NULL, NULL)) {
         sqlite3_close(db->db);
-        return "could not create schema";
+        *error = "could not create schema";
+        free(db);
+        return NULL;
     }
 
     if(SQLITE_OK != sqlite3_prepare_v2(db->db,
@@ -79,9 +92,10 @@ database_open(/* out */ Database* db) {
                                        -1,
                                        &db->insert_gesture_stmt,
                                        NULL)) {
-        const char* error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
+        *error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
         sqlite3_close(db->db);
-        return error;
+        free(db);
+        return NULL;
     }
 
     if(SQLITE_OK != sqlite3_prepare_v2(db->db,
@@ -89,10 +103,11 @@ database_open(/* out */ Database* db) {
                                        -1,
                                        &db->load_gestures_stmt,
                                        NULL)) {
-        const char* error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
+        *error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
         sqlite3_finalize(db->insert_gesture_stmt);
         sqlite3_close(db->db);
-        return error;
+        free(db);
+        return NULL;
     }
 
     if(SQLITE_OK != sqlite3_prepare_v2(db->db,
@@ -100,74 +115,84 @@ database_open(/* out */ Database* db) {
                                        -1,
                                        &db->load_gesture_with_id_stmt,
                                        NULL)) {
-        const char* error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
+        *error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
         sqlite3_finalize(db->insert_gesture_stmt);
         sqlite3_finalize(db->load_gestures_stmt);
         sqlite3_close(db->db);
-        return error;
+        free(db);
+        return NULL;
     }
 
-    return NULL;
+    *error = NULL;
+    return db;
 }
 
 const char*
-database_close(Database db) {
-    if(db.insert_gesture_stmt) {
-        sqlite3_finalize(db.insert_gesture_stmt);
+database_close(Database* db) {
+    if(!db) return NULL;
+
+    if(db->insert_gesture_stmt) {
+        sqlite3_finalize(db->insert_gesture_stmt);
     }
-    if(db.load_gestures_stmt) {
-        sqlite3_finalize(db.load_gestures_stmt);
+    if(db->load_gestures_stmt) {
+        sqlite3_finalize(db->load_gestures_stmt);
     }
-    if(db.load_gesture_with_id_stmt) {
-        sqlite3_finalize(db.load_gesture_with_id_stmt);
+    if(db->load_gesture_with_id_stmt) {
+        sqlite3_finalize(db->load_gesture_with_id_stmt);
     }
 
-
-    const int status = sqlite3_close_v2(db.db);
+    const int status = sqlite3_close_v2(db->db);
+    free(db);
+    db = NULL;
     if(SQLITE_OK == status) {
-        db.db = NULL;
         return NULL;
     }
+
     return sqlite3_errstr(status);
 }
 
 const char *
-database_add_gesture(Database db,
+database_add_gesture(Database* db,
                      stroke_t* stroke,
                      const char* description,
                      const char* command) {
-    sqlite3_clear_bindings(db.insert_gesture_stmt);
-    sqlite3_reset(db.insert_gesture_stmt);
+    if(!db) return "db was NULL";
+    if(!stroke) return "stroke was NULL";
+    if(!description) return "description was NULL";
+    if(!command) return "command was NULL";
 
-    if(SQLITE_OK != sqlite3_bind_int(db.insert_gesture_stmt,
+    sqlite3_clear_bindings(db->insert_gesture_stmt);
+    sqlite3_reset(db->insert_gesture_stmt);
+
+    if(SQLITE_OK != sqlite3_bind_int(db->insert_gesture_stmt,
                                      1, time(NULL))) {
-        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
+        return sqlite3_errstr(sqlite3_extended_errcode(db->db));
     }
-    if(SQLITE_OK != sqlite3_bind_text(db.insert_gesture_stmt,
+    if(SQLITE_OK != sqlite3_bind_text(db->insert_gesture_stmt,
                                       2, description, -1,
                                       SQLITE_STATIC)) {
-        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
+        return sqlite3_errstr(sqlite3_extended_errcode(db->db));
     }
-    if(SQLITE_OK != sqlite3_bind_text(db.insert_gesture_stmt,
+    if(SQLITE_OK != sqlite3_bind_text(db->insert_gesture_stmt,
                                        3, command, -1,
                                        SQLITE_STATIC)) {
-        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
+        return sqlite3_errstr(sqlite3_extended_errcode(db->db));
     }
-    if(SQLITE_OK != sqlite3_bind_blob(db.insert_gesture_stmt,
+    if(SQLITE_OK != sqlite3_bind_blob(db->insert_gesture_stmt,
                                       4, stroke->p, sizeof(point)*stroke->n,
                                       SQLITE_STATIC)) {
-        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
+        return sqlite3_errstr(sqlite3_extended_errcode(db->db));
     }
 
-    sqlite3_reset(db.insert_gesture_stmt);
+    sqlite3_reset(db->insert_gesture_stmt);
 
-    if(SQLITE_DONE != sqlite3_step(db.insert_gesture_stmt)) {
+    if(SQLITE_DONE != sqlite3_step(db->insert_gesture_stmt)) {
         return "step was not done?";
     }
     return NULL;
 }
 
-void
+static void
 _database_load_gesture(sqlite3_stmt* stmt,
                        stroke_t* stroke,
                        char** description,
@@ -195,27 +220,31 @@ _database_load_gesture(sqlite3_stmt* stmt,
 }
 
 const char*
-database_load_gestures(Database db,
+database_load_gestures(Database* db,
                        LoadGesturesCallback cb,
                        const void* user_data) {
-    sqlite3_reset(db.load_gestures_stmt);
+    if(!db) return "db was NULL";
+
+    sqlite3_reset(db->load_gestures_stmt);
 
     while(true) {
-        int status = sqlite3_step(db.load_gestures_stmt);
+        int status = sqlite3_step(db->load_gestures_stmt);
         stroke_t stroke = {};
         char* description = NULL;
         char* command = NULL;
 
         switch(status) {
         case SQLITE_DONE:
-            sqlite3_reset(db.load_gestures_stmt);
+            sqlite3_reset(db->load_gestures_stmt);
             return NULL;
         case SQLITE_ROW:
-            _database_load_gesture(db.load_gestures_stmt,
+            _database_load_gesture(db->load_gestures_stmt,
                                    &stroke,
                                    &description,
                                    &command);
-            cb(&stroke, description, command, user_data);
+            if(cb) {
+                cb(&stroke, description, command, user_data);
+            }
             break;
         default:
             return sqlite3_errstr(status);
@@ -224,34 +253,36 @@ database_load_gestures(Database db,
 }
 
 const char*
-database_load_gesture_with_id(Database db,
+database_load_gesture_with_id(Database* db,
                               int id,
                               stroke_t* stroke,
                               char** description,
                               char** command) {
-    sqlite3_clear_bindings(db.load_gesture_with_id_stmt);
-    sqlite3_reset(db.load_gesture_with_id_stmt);
+    if(!db) return "db was NULL";
 
-    if(SQLITE_OK != sqlite3_bind_int(db.load_gesture_with_id_stmt, 1, id)) {
-        return sqlite3_errstr(sqlite3_extended_errcode(db.db));
+    sqlite3_clear_bindings(db->load_gesture_with_id_stmt);
+    sqlite3_reset(db->load_gesture_with_id_stmt);
+
+    if(SQLITE_OK != sqlite3_bind_int(db->load_gesture_with_id_stmt, 1, id)) {
+        return sqlite3_errstr(sqlite3_extended_errcode(db->db));
     }
 
-    int status = sqlite3_step(db.load_gesture_with_id_stmt);
+    int status = sqlite3_step(db->load_gesture_with_id_stmt);
     if(status != SQLITE_ROW) {
         return "not found";
     }
 
-    _database_load_gesture(db.load_gesture_with_id_stmt,
+    _database_load_gesture(db->load_gesture_with_id_stmt,
                            stroke,
                            description,
                            command);
 
-    status = sqlite3_step(db.load_gesture_with_id_stmt);
+    status = sqlite3_step(db->load_gesture_with_id_stmt);
     if(status != SQLITE_DONE) {
-        sqlite3_reset(db.load_gesture_with_id_stmt);
+        sqlite3_reset(db->load_gesture_with_id_stmt);
         return "more than one gesture found?";
     }
 
-    sqlite3_reset(db.load_gesture_with_id_stmt);
+    sqlite3_reset(db->load_gesture_with_id_stmt);
     return NULL;
 }

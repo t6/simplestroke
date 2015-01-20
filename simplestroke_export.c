@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -30,8 +30,8 @@
 #include "db.h"
 #include "util.h"
 
-int
-simplestroke_export_as_svg(stroke_t *stroke,
+static int
+simplestroke_export_as_svg(stroke_t* stroke,
                            char* description,
                            char* command,
                            char* filename,
@@ -124,9 +124,8 @@ simplestroke_export(const int argc,
         exec_man_for_subcommand(argv[0]);
     }
 
-    const char* error;
-    Database db;
-    error = database_open(&db);
+    const char* error = NULL;
+    Database *db = database_open(&error);
     if(error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;

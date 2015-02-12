@@ -75,10 +75,6 @@ record_callback(XPointer closure, XRecordInterceptData* record_data) {
 
     if(record_data->category == XRecordFromServer) {
         switch(event->u.u.type) {
-        case KeyRelease:
-            // TODO: This is problematic when simplestroke detect is started
-            // from an X terminal (the Return key pressed in the terminal fires
-            // the KeyRelease event) instead of from xbindkeys...
         case ButtonRelease:
             state->track = false;
             break;
@@ -143,7 +139,7 @@ record_stroke(/* out */ stroke_t* stroke) {
         return "Could not create record context";
     }
 
-    XSync(state.control, 1);
+    XSync(state.control, True);
 
     if(0 == XRecordEnableContextAsync(state.data,
                                       state.context,

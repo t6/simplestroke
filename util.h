@@ -16,13 +16,13 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
-#include <sys/stat.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 
 void config_home(char *buf, size_t len);
 void config_dir(char *buf, size_t len);
 void exec_man_for_subcommand(const char *subcommand);
 bool mkdirs(char *path);
-void exec_commandline(const char* commandline);
+void exec_commandline(const char *commandline);
 
 #endif

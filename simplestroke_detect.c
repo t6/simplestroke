@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,21 +13,14 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <signal.h>
-#include <stdbool.h>
-#include <sys/queue.h>
-#include <sys/param.h>
-#include <getopt.h>
 
-#include "recorder-x11.h"
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "db.h"
+#include "recorder-x11.h"
 #include "util.h"
 
 typedef struct {
@@ -39,13 +32,13 @@ typedef struct {
 
 static void
 load_gestures_cb(stroke_t *stroke,
-                 char* description,
-                 char* command,
-                 const void* user_data) {
-    GestureSelectionState *state = (GestureSelectionState*)user_data;
+                 char *description,
+                 char *command,
+                 const void *user_data) {
+    GestureSelectionState *state = (GestureSelectionState *)user_data;
     double score = stroke_compare(stroke, &state->stroke, NULL, NULL);
-    if(score < stroke_infinity) { // state->stroke has similarity with stroke
-        if(score < state->score) { // check if there is a better candidate
+    if (score < stroke_infinity) { // state->stroke has similarity with stroke
+        if (score < state->score) { // check if there is a better candidate
             state->score = score;
             strlcpy(state->command, command, sizeof(state->command));
             strlcpy(state->description, description, sizeof(state->description));
@@ -57,7 +50,7 @@ load_gestures_cb(stroke_t *stroke,
 
 int
 simplestroke_detect(const int argc,
-                 char** argv) {
+                    char **argv) {
     struct option longopts[] = {
         { "help",  no_argument, NULL, 'h' },
         { "no-exec", no_argument, NULL, 'n'},
@@ -66,8 +59,8 @@ simplestroke_detect(const int argc,
 
     bool no_exec = false;
     int ch;
-    while((ch = getopt_long(argc, argv, "hn", longopts, NULL)) != -1) {
-        switch(ch) {
+    while ((ch = getopt_long(argc, argv, "hn", longopts, NULL)) != -1) {
+        switch (ch) {
         case 'h':
             exec_man_for_subcommand(argv[0]);
             break;
@@ -81,9 +74,9 @@ simplestroke_detect(const int argc,
         }
     }
 
-    const char* error = NULL;
-    Database* db = database_open(&error);
-    if(error) {
+    const char *error = NULL;
+    Database *db = database_open(&error);
+    if (error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
@@ -91,29 +84,28 @@ simplestroke_detect(const int argc,
     GestureSelectionState state = { .stroke = {},
                                     .command = {},
                                     .description = {},
-                                    .score = stroke_infinity };
+                                    .score = stroke_infinity
+                                  };
     error = record_stroke(&state.stroke);
-    if(error) {
+    if (error) {
         fprintf(stderr, "Failed recording gesture: %s\n", error);
         return EXIT_FAILURE;
     }
 
     error = database_load_gestures(db, load_gestures_cb, &state);
-    if(error) {
+    if (error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
     database_close(db);
 
-    if(state.score < stroke_infinity) { // We found a candidate
-        if(no_exec) {
+    if (state.score < stroke_infinity) { // We found a candidate
+        if (no_exec)
             printf("Command: %s\nDescription: %s\n", state.command, state.description);
-        } else {
+        else
             exec_commandline(state.command);
-        }
         return EXIT_SUCCESS;
-    } else {
+    } else
         return EXIT_FAILURE;
-    }
 }

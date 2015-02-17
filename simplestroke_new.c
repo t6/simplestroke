@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,26 +13,21 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <signal.h>
-#include <stdbool.h>
-#include <sys/queue.h>
-#include <sys/param.h>
-#include <getopt.h>
 
-#include "recorder-x11.h"
+#include <errno.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "db.h"
+#include "recorder-x11.h"
 #include "util.h"
 
 int
 simplestroke_new(const int argc,
-                 char** argv) {
+                 char **argv) {
     struct option longopts[] = {
         { "help",  no_argument, NULL, 'h' },
         { "description", required_argument, NULL, 'd' },
@@ -41,21 +36,23 @@ simplestroke_new(const int argc,
         { NULL, 0, NULL, 0 }
     };
 
-    if(argc == 1)
+    if (argc == 1)
         exec_man_for_subcommand(argv[0]);
 
-    char* description = NULL;
-    char* command = NULL;
+    char *description = NULL;
+    char *command = NULL;
     // wait for 2 seconds before recording by default
     const long default_wait = 2;
     long wait = default_wait;
     int ch;
-    while((ch = getopt_long(argc, argv, "hw:d:c:", longopts, NULL)) != -1) {
-        switch(ch) {
+    while ((ch = getopt_long(argc, argv, "hw:d:c:", longopts, NULL)) != -1) {
+        switch (ch) {
         case 'w':
             wait = strtol(optarg, NULL, 10);
-            if(errno == EINVAL || errno == ERANGE || wait < 0) {
-                fprintf(stderr, "--wait expects a positive integer, falling back to default of %li seconds!\n", default_wait);
+            if (errno == EINVAL || errno == ERANGE || wait < 0) {
+                fprintf(stderr,
+                        "--wait expects a positive integer, falling back to default of %li seconds!\n",
+                        default_wait);
                 wait = default_wait;
             }
             break;
@@ -75,29 +72,29 @@ simplestroke_new(const int argc,
         }
     }
 
-    if(command == NULL) {
+    if (command == NULL) {
         fprintf(stderr, "Missing argument: --command!\n");
         return EXIT_FAILURE;
     }
 
-    if(description == NULL) {
+    if (description == NULL) {
         fprintf(stderr, "Missing argument: --description!\n");
         return EXIT_FAILURE;
     }
 
-    const char* error = NULL;
+    const char *error = NULL;
     Database *db = database_open(&error);
-    if(error) {
+    if (error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
     // wait for X seconds, then record
-    if(wait > 0) {
-        const char* msg = "Recording gesture in %i seconds (press C-c to abort)...";
+    if (wait > 0) {
+        const char *msg = "Recording gesture in %i seconds (press C-c to abort)...";
         printf(msg, wait);
         fflush(stdout);
-        for(long i = wait - 1; i >= 0; i--) {
+        for (long i = wait - 1; i >= 0; i--) {
             sleep(1);
             printf("\r");
             printf(msg, i);
@@ -109,14 +106,14 @@ simplestroke_new(const int argc,
 
     stroke_t stroke = {};
     error = record_stroke(&stroke);
-    if(error) {
+    if (error) {
         fprintf(stderr, "Failed recording gesture: %s\n", error);
         database_close(db);
         return EXIT_FAILURE;
     }
 
     error = database_add_gesture(db, &stroke, description, command);
-    if(error) {
+    if (error) {
         fprintf(stderr, "Could not store gesture in database: %s\n", error);
         database_close(db);
         return EXIT_FAILURE;

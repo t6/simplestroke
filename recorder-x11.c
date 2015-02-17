@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,29 +14,25 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <sys/queue.h>
-#include <unistd.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/record.h>
-#include <X11/extensions/shape.h>
+#include <assert.h>
+#include <unistd.h>
 
 #include "recorder-x11.h"
 
 typedef struct {
-    Display* control;
-    Display* data;
-    XRecordRange* range;
+    Display *control;
+    Display *data;
+    XRecordRange *range;
     XRecordContext context;
 
     bool track;
     INT16 x;
     INT16 y;
 
-    stroke_t* stroke;
+    stroke_t *stroke;
 } RecorderState;
 
 
@@ -45,36 +41,31 @@ typedef struct {
  */
 
 void
-record_cleanup(const RecorderState* state) {
-    if(!state) {
+record_cleanup(const RecorderState *state) {
+    if (!state)
         return;
-    }
 
-    if(state->context != 0 && state->control) {
+    if (state->context != 0 && state->control)
         XRecordFreeContext(state->control, state->context);
-    }
 
-    if(state->control) {
+    if (state->control)
         XCloseDisplay(state->control);
-    }
 
-    if(state->data) {
+    if (state->data)
         XCloseDisplay(state->data);
-    }
 
-    if(state->range) {
+    if (state->range)
         XFree(state->range);
-    }
 }
 
 void
-record_callback(XPointer closure, XRecordInterceptData* record_data) {
-    RecorderState* state = (RecorderState*)closure;
+record_callback(XPointer closure, XRecordInterceptData *record_data) {
+    RecorderState *state = (RecorderState *)closure;
     // the data field can be treated as an xEvent as defined in X11/Xproto.h
-    const xEvent* event = (xEvent*)record_data->data;
+    const xEvent *event = (xEvent *)record_data->data;
 
-    if(record_data->category == XRecordFromServer) {
-        switch(event->u.u.type) {
+    if (record_data->category == XRecordFromServer) {
+        switch (event->u.u.type) {
         case ButtonRelease:
             state->track = false;
             break;
@@ -87,11 +78,11 @@ record_callback(XPointer closure, XRecordInterceptData* record_data) {
             return;
         }
 
-        if(state->track &&
-           state->stroke->n < MAX_STROKE_POINTS &&
-           !state->stroke->is_finished) {
+        if (state->track &&
+                state->stroke->n < MAX_STROKE_POINTS &&
+                !state->stroke->is_finished)
             stroke_add_point(state->stroke, state->x, state->y);
-        } else {
+        else {
             state->track = false;
             stroke_finish(state->stroke);
         }
@@ -100,11 +91,9 @@ record_callback(XPointer closure, XRecordInterceptData* record_data) {
     XRecordFreeData(record_data);
 }
 
-const char*
-record_stroke(/* out */ stroke_t* stroke) {
-    if(!stroke) {
-        return "stroke was null!";
-    }
+const char *
+record_stroke(/* out */ stroke_t *stroke) {
+    assert(stroke);
 
     RecorderState state = { .control = XOpenDisplay(NULL),
                             .data = XOpenDisplay(NULL),
@@ -113,19 +102,20 @@ record_stroke(/* out */ stroke_t* stroke) {
                             .stroke = stroke,
                             .context = 0,
                             .x = 0,
-                            .y = 0 };
+                            .y = 0
+                          };
 
     // See http://www.x.org/docs/Xext/recordlib.pdf
-    if(!state.control) {
+    if (!state.control) {
         record_cleanup(&state);
         return "Could not open control display";
     }
-    if(!state.data) {
+    if (!state.data) {
         record_cleanup(&state);
         return "Could not open data display";
     }
 
-    if(!state.range) {
+    if (!state.range) {
         record_cleanup(&state);
         return "Could not create record range";
     }
@@ -133,23 +123,24 @@ record_stroke(/* out */ stroke_t* stroke) {
     state.range->device_events.last = MotionNotify;
 
     XRecordClientSpec spec = XRecordAllClients;
-    state.context = XRecordCreateContext(state.control, 0, &spec, 1, &state.range, 1);
-    if(!state.context) {
+    state.context = XRecordCreateContext(state.control, 0, &spec, 1, &state.range,
+                                         1);
+    if (!state.context) {
         record_cleanup(&state);
         return "Could not create record context";
     }
 
     XSync(state.control, True);
 
-    if(0 == XRecordEnableContextAsync(state.data,
-                                      state.context,
-                                      &record_callback,
-                                      (XPointer)&state)) {
+    if (0 == XRecordEnableContextAsync(state.data,
+                                       state.context,
+                                       &record_callback,
+                                       (XPointer)&state)) {
         record_cleanup(&state);
         return "could not enable data transfer between recording client and X server";
     }
 
-    while(state.track) {
+    while (state.track) {
         XRecordProcessReplies(state.data);
         usleep(50);
     }

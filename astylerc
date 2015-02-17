@@ -1,0 +1,11 @@
+--style=google
+--indent=spaces
+--indent-preproc-block
+--pad-oper
+--pad-header
+--align-pointer=name
+--remove-brackets
+--convert-tabs
+--max-code-length=80
+--suffix=none
+--lineend=linux

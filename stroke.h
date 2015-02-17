@@ -20,7 +20,7 @@
 #include <stdbool.h>
 
 #ifndef MAX_STROKE_POINTS
-#define MAX_STROKE_POINTS 512
+    #define MAX_STROKE_POINTS 512
 #endif
 
 typedef struct {
@@ -39,7 +39,8 @@ typedef struct {
 
 void stroke_add_point(stroke_t *stroke, double x, double y);
 void stroke_finish(stroke_t *stroke);
-double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x, int *path_y);
+double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x,
+                      int *path_y);
 
 extern const double stroke_infinity;
 

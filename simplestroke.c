@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,18 +13,19 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "util.h"
 
-extern int simplestroke_new(const int argc, const char** argv);
-extern int simplestroke_detect(const int argc, const char** argv);
-extern int simplestroke_export(const int argc, const char** argv);
+extern int simplestroke_new(const int argc, const char **argv);
+extern int simplestroke_detect(const int argc, const char **argv);
+extern int simplestroke_export(const int argc, const char **argv);
 
 typedef struct {
-    char* name;
-    int (*handler)(const int, const char**);
+    char *name;
+    int (*handler)(const int, const char **);
 } Subcommand;
 
 static Subcommand subcommands[] = {
@@ -35,14 +36,13 @@ static Subcommand subcommands[] = {
 
 int
 main(const int argc,
-     const char** argv) {
-    if(argc > 1) {
-        const int n = sizeof(subcommands)/sizeof(Subcommand);
-        for(int i = 0; i < n; i++) {
+     const char **argv) {
+    if (argc > 1) {
+        const int n = sizeof(subcommands) / sizeof(Subcommand);
+        for (int i = 0; i < n; i++) {
             const Subcommand subcmd = subcommands[i];
-            if(!strcmp(argv[1], subcmd.name)) {
+            if (!strcmp(argv[1], subcmd.name))
                 return subcmd.handler(argc - 1, argv + 1);
-            }
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,33 +13,26 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <poll.h>
-#include <signal.h>
-#include <stdbool.h>
-#include <sys/queue.h>
-#include <sys/param.h>
-#include <getopt.h>
 
-#include "recorder-x11.h"
+#include <errno.h>
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "db.h"
+#include "recorder-x11.h"
 #include "util.h"
 
 static int
-simplestroke_export_as_svg(stroke_t* stroke,
-                           char* description,
-                           char* command,
-                           char* filename,
-                           char* color) {
-    FILE* f = stdout;
-    if(filename) {
+simplestroke_export_as_svg(stroke_t *stroke,
+                           char *description,
+                           char *command,
+                           char *filename,
+                           char *color) {
+    FILE *f = stdout;
+    if (filename) {
         f = fopen(filename, "w");
-        if(!f) {
+        if (!f) {
             perror("fopen");
             return EXIT_FAILURE;
         }
@@ -70,9 +63,8 @@ simplestroke_export_as_svg(stroke_t* stroke,
             width, height,
             color ? color : "black");
 
-    for(int i = 0; i < stroke->n; i++) {
+    for (int i = 0; i < stroke->n; i++)
         fprintf(f, "%f,%f ", stroke->p[i].x, stroke->p[i].y);
-    }
     fprintf(f, "'/>\n  </svg>\n</svg>\n");
 
     fclose(f);
@@ -82,7 +74,7 @@ simplestroke_export_as_svg(stroke_t* stroke,
 
 int
 simplestroke_export(const int argc,
-                    char** argv) {
+                    char **argv) {
     struct option longopts[] = {
         { "help",  no_argument, NULL, 'h' },
         { "id", required_argument, NULL, 'i' },
@@ -95,14 +87,14 @@ simplestroke_export(const int argc,
     int id = -1;
     char *filename = NULL;
     char *color = NULL;
-    while((ch = getopt_long(argc, argv, "hc:i:f:", longopts, NULL)) != -1) {
-        switch(ch) {
+    while ((ch = getopt_long(argc, argv, "hc:i:f:", longopts, NULL)) != -1) {
+        switch (ch) {
         case 'h':
             exec_man_for_subcommand(argv[0]);
             break;
         case 'i':
             id = (int)strtol(optarg, NULL, 10);
-            if(errno == EINVAL || errno == ERANGE || id < 0) {
+            if (errno == EINVAL || errno == ERANGE || id < 0) {
                 fprintf(stderr, "--id must be a positive integer!\n");
                 return EXIT_FAILURE;
             }
@@ -120,28 +112,28 @@ simplestroke_export(const int argc,
         }
     }
 
-    if(id == -1) {
+    if (id == -1)
         exec_man_for_subcommand(argv[0]);
-    }
 
-    const char* error = NULL;
+    const char *error = NULL;
     Database *db = database_open(&error);
-    if(error) {
+    if (error) {
         fprintf(stderr, "%s\n", error);
         return EXIT_FAILURE;
     }
 
     stroke_t stroke = {};
-    char* command = NULL;
-    char* description = NULL;
+    char *command = NULL;
+    char *description = NULL;
     error = database_load_gesture_with_id(db, id, &stroke,
                                           &description, &command);
-    if(error) {
+    if (error) {
         fprintf(stderr, "Problem loading gesture with id %i: %s\n", id, error);
         return EXIT_FAILURE;
     }
 
-    int retval = simplestroke_export_as_svg(&stroke, description, command, filename, color);
+    int retval = simplestroke_export_as_svg(&stroke, description, command, filename,
+                                            color);
 
     free(command);
     free(description);

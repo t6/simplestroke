@@ -23,6 +23,10 @@ options:
 	@echo "CFLAGS  = ${CFLAGS}"
 	@echo "LDFLAGS = ${LDFLAGS}"
 
+fmt:
+	@echo formatting code
+	@astyle --options=astylerc ${SRC} *.h
+
 simplestroke: ${SRC:.c=.o}
 	@echo Linking simplestroke
 	@${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${SRC:.c=.o}

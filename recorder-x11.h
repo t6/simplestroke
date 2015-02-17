@@ -18,6 +18,6 @@
 
 #include "stroke.h"
 
-const char* record_stroke(/* out */ stroke_t* stroke);
+const char *record_stroke(/* out */ stroke_t *stroke);
 
 #endif

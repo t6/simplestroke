@@ -3,8 +3,8 @@ CC = cc
 # pkg-config packages
 PKGS = x11 xext xtst sqlite3
 CFLAGS = -g -std=c99 -Wall -Wextra
-CFLAGS += `pkg-config --cflags ${PKGS}`
-LDFLAGS = -lm `pkg-config --libs ${PKGS}` -lxo
+CFLAGS += `pkg-config --cflags ${PKGS}` -I lib/xo
+LDFLAGS = -lm `pkg-config --libs ${PKGS}`
 
 SRC = recorder-x11.c \
 	db.c \
@@ -14,6 +14,8 @@ SRC = recorder-x11.c \
 	simplestroke_new.c \
 	simplestroke_detect.c \
 	simplestroke_export.c
+
+SRC += lib/xo/libxo.c
 
 all: options simplestroke readme
 
@@ -37,7 +39,7 @@ simplestroke: ${SRC:.c=.o}
 
 .c.o:
 	@echo CC $<
-	@${CC} ${CFLAGS} -c $<
+	@${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
 
 clean:
 	rm -f ${SRC:.c=.o} simplestroke

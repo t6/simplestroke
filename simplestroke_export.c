@@ -18,7 +18,8 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <libxo/xo.h>
+
+#include "xo.h"
 
 #include "db.h"
 #include "recorder-x11.h"

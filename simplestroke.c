@@ -14,9 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "xo.h"
 #include "util.h"
 
 extern int simplestroke_new(const int argc, const char **argv);
@@ -35,17 +37,16 @@ static Subcommand subcommands[] = {
 };
 
 int
-main(const int argc,
-     const char **argv) {
+main(int argc, char **argv) {
     if (argc > 1) {
         const int n = sizeof(subcommands) / sizeof(Subcommand);
         for (int i = 0; i < n; i++) {
             const Subcommand subcmd = subcommands[i];
             if (!strcmp(argv[1], subcmd.name)) {
-                int args = xo_parse_args(argc, argv);
-                if (args < 0)
+                argc = xo_parse_args(argc, argv);
+                if (argc < 0)
                     return EXIT_FAILURE;
-                return subcmd.handler(args - 1, argv + 1);
+                return subcmd.handler(argc - 1, (const char**)argv + 1);
             }
         }
     }

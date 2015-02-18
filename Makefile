@@ -4,7 +4,7 @@ CC = cc
 PKGS = x11 xext xtst sqlite3
 CFLAGS = -g -std=c99 -Wall -Wextra
 CFLAGS += `pkg-config --cflags ${PKGS}`
-LDFLAGS = -lm `pkg-config --libs ${PKGS}`
+LDFLAGS = -lm `pkg-config --libs ${PKGS}` -lxo
 
 SRC = recorder-x11.c \
 	db.c \

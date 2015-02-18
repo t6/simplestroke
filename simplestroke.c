@@ -41,8 +41,12 @@ main(const int argc,
         const int n = sizeof(subcommands) / sizeof(Subcommand);
         for (int i = 0; i < n; i++) {
             const Subcommand subcmd = subcommands[i];
-            if (!strcmp(argv[1], subcmd.name))
-                return subcmd.handler(argc - 1, argv + 1);
+            if (!strcmp(argv[1], subcmd.name)) {
+                int args = xo_parse_args(argc, argv);
+                if (args < 0)
+                    return EXIT_FAILURE;
+                return subcmd.handler(args - 1, argv + 1);
+            }
         }
     }
 

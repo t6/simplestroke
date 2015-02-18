@@ -18,77 +18,90 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <libxo/xo.h>
 
 #include "db.h"
 #include "recorder-x11.h"
 #include "util.h"
 
 static int
+simplestroke_export_xo(stroke_t *stroke,
+                       int id,
+                       char *description,
+                       char *command) {
+    xo_open_container("gesture");
+    xo_emit("{e:id/%i}"
+            "{Lwc:Description}{:description/%s}\n"
+            "{Lwc:Command}{:command/%s}\n",
+            id, description, command);
+
+    xo_open_list("points");
+    for (int i = 0; i < stroke->n; i++) {
+        xo_open_instance("point");
+        xo_emit("{e:x/%f}{e:y/%f}", stroke->p[i].x, stroke->p[i].y);
+        xo_close_instance("point");
+    }
+    xo_close_list("points");
+    xo_close_container("gesture");
+
+    return EXIT_SUCCESS;
+}
+
+static int
 simplestroke_export_as_svg(stroke_t *stroke,
                            char *description,
                            char *command,
-                           char *filename,
                            char *color) {
-    FILE *f = stdout;
-    if (filename) {
-        f = fopen(filename, "w");
-        if (!f) {
-            perror("fopen");
-            return EXIT_FAILURE;
-        }
-    }
-
     // TODO: need to escape ]]> in description and command (end of CDATA)
     //       by expanding ]]> to ]]]]><![CDATA[>
     const int width = 250;
     const int height = 250;
-    fprintf(f,
-            "<svg xmlns='http://www.w3.org/2000/svg'\n"
-            "     width='%ipx' height='%ipx'>\n"
-            "  <!-- the gesture's description: -->\n"
-            "  <title><![CDATA[%s]]></title>\n"
-            "  <!-- command to execute after recognizing this gesture: -->\n"
-            "  <desc><![CDATA[%s]]></desc>\n"
-            "  <svg viewBox=\"0 0 1 1\" width='%ipx' height='%ipx'>\n"
-            "    <!-- points that make up this gesture -->\n"
-            "    <polyline fill='none'\n"
-            "              stroke-linejoin='round'\n"
-            "              stroke-linecap='round'\n"
-            "              stroke='%s'\n"
-            "              stroke-width='1%%'\n"
-            "              points='",
-            width, height,
-            description,
-            command,
-            width, height,
-            color ? color : "black");
+    printf("<svg xmlns='http://www.w3.org/2000/svg'\n"
+           "     width='%ipx' height='%ipx'>\n"
+           "  <!-- the gesture's description: -->\n"
+           "  <title><![CDATA[%s]]></title>\n"
+           "  <!-- command to execute after recognizing this gesture: -->\n"
+           "  <desc><![CDATA[%s]]></desc>\n"
+           "  <svg viewBox=\"0 0 1 1\" width='%ipx' height='%ipx'>\n"
+           "    <!-- points that make up this gesture -->\n"
+           "    <polyline fill='none'\n"
+           "              stroke-linejoin='round'\n"
+           "              stroke-linecap='round'\n"
+           "              stroke='%s'\n"
+           "              stroke-width='1%%'\n"
+           "              points='",
+           width, height,
+           description,
+           command,
+           width, height,
+           color ? color : "black");
 
     for (int i = 0; i < stroke->n; i++)
-        fprintf(f, "%f,%f ", stroke->p[i].x, stroke->p[i].y);
-    fprintf(f, "'/>\n  </svg>\n</svg>\n");
-
-    fclose(f);
+        printf("%f,%f ", stroke->p[i].x, stroke->p[i].y);
+    printf("'/>\n  </svg>\n</svg>\n");
 
     return EXIT_SUCCESS;
 }
 
 int
-simplestroke_export(const int argc,
-                    char **argv) {
+simplestroke_export(int argc, char **argv) {
     struct option longopts[] = {
         { "help",  no_argument, NULL, 'h' },
         { "id", required_argument, NULL, 'i' },
-        { "file", required_argument, NULL, 'f'},
         { "color", required_argument, NULL, 'c' },
+        { "svg", no_argument, NULL, 's' },
         { NULL, 0, NULL, 0 }
     };
 
     int ch;
     int id = -1;
-    char *filename = NULL;
+    bool svg_export = false;
     char *color = NULL;
-    while ((ch = getopt_long(argc, argv, "hc:i:f:", longopts, NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, "hc:i:s", longopts, NULL)) != -1) {
         switch (ch) {
+        case 's':
+            svg_export = true;
+            break;
         case 'h':
             exec_man_for_subcommand(argv[0]);
             break;
@@ -98,9 +111,6 @@ simplestroke_export(const int argc,
                 fprintf(stderr, "--id must be a positive integer!\n");
                 return EXIT_FAILURE;
             }
-            break;
-        case 'f':
-            filename = optarg;
             break;
         case 'c':
             color = optarg;
@@ -132,9 +142,11 @@ simplestroke_export(const int argc,
         return EXIT_FAILURE;
     }
 
-    int retval = simplestroke_export_as_svg(&stroke, description, command, filename,
-                                            color);
+    int retval = svg_export
+                 ? simplestroke_export_as_svg(&stroke, description, command, color)
+                 : simplestroke_export_xo(&stroke, id, description, command);
 
+    xo_finish();
     free(command);
     free(description);
     database_close(db);

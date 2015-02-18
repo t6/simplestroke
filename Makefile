@@ -15,7 +15,11 @@ SRC = recorder-x11.c \
 	simplestroke_detect.c \
 	simplestroke_export.c
 
-all: options simplestroke
+all: options simplestroke readme
+
+readme:
+	@echo regenerating README from man page
+	@mandoc -Tascii simplestroke.1 | col -bx > README
 
 options:
 	@echo simplestroke build options:

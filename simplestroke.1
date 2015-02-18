@@ -1,0 +1,175 @@
+.\"
+.\" Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+.\"
+.\" Permission to use, copy, modify, and/or distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+.\" SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+.\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+.\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd February 18, 2015
+.Dt SIMPLESTROKE 1
+.Os
+.Sh NAME
+.Nm simplestroke
+.Nd "a gesture recognition application"
+.Sh SYNOPSIS
+.\" help
+.Nm
+.Op Fl h
+.Nm
+.\" new
+.Cm new
+.Fl d Ar description
+.Fl c Ar command
+.Op Fl w Ar seconds
+.Op Fl h
+.Nm
+.\" detect
+.Cm detect
+.Op Fl hn
+.Nm
+.\" export
+.Cm export
+.Fl i Ar id
+.Op Fl f Ar file
+.Op Fl c Ar color
+.Op Fl h
+.Sh DESCRIPTION
+.Nm
+is a gesture detection application.  It is backed by a SQLite database
+that is used to store the gestures.  Most of the interface consists of
+manipulating this database.  There are several modes and the first
+argument determines the mode
+.Nm
+starts in.
+.Bl -tag -width ".Cm export"
+.\" new
+.It Cm new
+In this mode
+.Nm
+records a gesture and creates a new entry in the database.
+Every gesture needs to have a human readable
+.Ar description
+and an action or
+.Ar command
+to execute on detection of a gesture.
+The
+.Fl c
+and
+.Fl d
+options are required and \fBnot\fP optional.
+.Nm
+waits for 2 seconds before recording the gesture.  When you are
+finished drawing the gesture click or press any mouse button or key.
+.Bl -tag -width 14n
+.It Fl c Ar command
+The command to execute on detection of the gesture.
+.Ar command
+is passed to
+.Pa /bin/sh .
+.It Fl d Ar description
+A human-readable description for the gesture.  The description can be
+arbitrarily long.
+.It Fl w Ar seconds
+By default
+.Nm
+waits for 2 seconds before recording a gesture. You can override
+this behavior with
+.Fl w .
+If
+.Ar seconds
+is 0,
+.Nm
+will start recording your mouse movements immediately.
+.El
+.\" detect
+.It Cm detect
+This mode starts gesture detection.  Draw your gesture and then confirm by
+clicking any mouse button.
+.Pp
+More specifically,
+.Nm
+reacts on the release of any mouse button.  This makes it possible to
+start
+.Nm
+with a pressed mouse button and start gesture analysis after releasing it.
+.Bl -tag -width 14n
+.It Fl n
+Do not execute the command associated with a detected gesture, but print
+information about it instead, if any.
+.El
+.\" export
+.It Cm export
+Displays information about the gesture with the id given by
+.Fl i .
+Output goes to
+.Ar stdout .
+This command supports additional machine-readable output formats like
+e.g. XML and JSON via
+.Fl -libxo .
+.Bl -tag -width 14n
+.It Fl i Ar id
+The id of the gesture to export.
+.It Fl s
+Output an SVG image.
+.It Fl c Ar color
+The stroke color, can be in any format that is supported by SVG.
+.El
+.El
+.Sh EXAMPLES
+.Ss STARTING DETECTION
+To start gesture detection in every day situations, you might want to
+setup your desktop environment to start \fBsimplestroke detect\fP.
+.Pp
+E.g. to start
+.Nm
+with \fBxbindkeys\fP while holding down the 9th mouse
+button add this to your
+.Pa ~/.xbindkeysrc
+.Bd -literal -offset indent
+"simplestroke detect"
+        b:9
+.Ed
+.Pp
+Hold the mouse button and after you are finished drawing your gesture,
+release it.
+.Nm
+will then analyse your gesture and determine
+which command to start, if any.
+
+To start gesture detection with your keyboard add this to your
+.Pa ~/.xbindkeysrc
+.Bd -literal -offset indent
+"simplestroke detect"
+        Mod4 + c + Release
+.Ed
+.Pp
+or if you use \fBi3\fP add this to your
+.Pa ~/.config/i3/config
+.Bd -literal -offset indent
+bindsym --release $mod+c
+.Ed
+.Pp
+the release options prevents \fBxbindkeys\fP or \fBi3\fP from spawning multiple
+.Nm
+processes.  Draw your gesture and press a mouse button to start detection.
+.Pp
+Note that binding to mouse buttons is currently not possible in \fBi3\fP 4.8.
+.El
+.Sh SEE ALSO
+.Xr i3 1
+.Xr xbindkeys 1
+.Xr xo 1
+.Sh AUTHORS
+.An Tobias Kortkamp Aq tobias.kortkamp@gmail.com
+.Pp
+.Nm
+is inspired and based on \fBeasystroke\fP 0.6.0 written by Thomas Jaeger
+.Aq ThJaeger@gmail.com .

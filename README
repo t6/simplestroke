@@ -4,7 +4,7 @@ NAME
      simplestroke -- a gesture recognition application
 
 SYNOPSIS
-     simplestroke [-h]
+     simplestroke -h
      simplestroke new -d description -c command [-w seconds] [-h]
      simplestroke detect [-hn]
      simplestroke export -i id [-f file] [-c color] [-h]

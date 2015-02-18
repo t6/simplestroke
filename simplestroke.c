@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "lib/xo/xo.h"
 #include "util.h"
@@ -36,6 +37,16 @@ static Subcommand subcommands[] = {
     { "export", simplestroke_export },
 };
 
+static void
+open_man_page() {
+    char *argv[] = {"man", "./simplestroke.1", NULL};
+    execvp("man", argv);
+
+    // execv returned => an error occurred...
+    perror("execvp");
+    abort();
+}
+
 int
 main(int argc, char **argv) {
     if (argc > 1) {
@@ -46,12 +57,12 @@ main(int argc, char **argv) {
                 argc = xo_parse_args(argc, argv);
                 if (argc < 0)
                     return EXIT_FAILURE;
-                return subcmd.handler(argc - 1, (const char**)argv + 1);
+                return subcmd.handler(argc - 1, (const char **)argv + 1);
             }
         }
     }
 
-    exec_man_for_subcommand(NULL);
+    open_man_page();
 
     return EXIT_FAILURE;
 }

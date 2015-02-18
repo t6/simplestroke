@@ -21,7 +21,6 @@
 
 void config_home(char *buf, size_t len);
 void config_dir(char *buf, size_t len);
-void exec_man_for_subcommand(const char *subcommand);
 bool mkdirs(char *path);
 void exec_commandline(const char *commandline);
 

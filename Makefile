@@ -24,7 +24,7 @@ SRC += \
 	lib/xo/libxo.c \
 	lib/sqlite3/sqlite3.c
 
-all: options simplestroke readme
+all: options fmt readme simplestroke
 
 readme:
 	@echo regenerating README from man page
@@ -38,7 +38,7 @@ options:
 
 fmt:
 	@echo formatting code
-	@astyle --options=astylerc ${SRC} *.h
+	@astyle --options=astylerc *.c *.h
 
 simplestroke: ${SRC:.c=.o}
 	@echo Linking simplestroke

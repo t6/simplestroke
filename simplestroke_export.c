@@ -22,7 +22,6 @@
 #include "db.h"
 #include "lib/xo/xo.h"
 #include "recorder-x11.h"
-#include "util.h"
 
 static int
 simplestroke_export_xo(stroke_t *stroke,
@@ -83,6 +82,13 @@ simplestroke_export_as_svg(stroke_t *stroke,
     return EXIT_SUCCESS;
 }
 
+static void
+simplestroke_export_usage() {
+    fprintf(stderr,
+            "usage: simplestroke export -i id [-c color] [-s] [--libxo xoargs]\n"
+            "       simplestroke export -h\n");
+}
+
 int
 simplestroke_export(int argc, char **argv) {
     struct option longopts[] = {
@@ -103,8 +109,8 @@ simplestroke_export(int argc, char **argv) {
             svg_export = true;
             break;
         case 'h':
-            exec_man_for_subcommand(argv[0]);
-            break;
+            simplestroke_export_usage();
+            return EXIT_FAILURE;
         case 'i':
             id = (int)strtol(optarg, NULL, 10);
             if (errno == EINVAL || errno == ERANGE || id < 0) {
@@ -122,8 +128,10 @@ simplestroke_export(int argc, char **argv) {
         }
     }
 
-    if (id == -1)
-        exec_man_for_subcommand(argv[0]);
+    if (id == -1) {
+        simplestroke_export_usage();
+        return EXIT_FAILURE;
+    }
 
     const char *error = NULL;
     Database *db = database_open(&error);

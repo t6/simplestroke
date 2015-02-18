@@ -50,25 +50,6 @@ config_dir(char *buf,
     strlcat(buf, "/simplestroke", len);
 }
 
-void
-exec_man_for_subcommand(const char *subcommand) {
-    char buf[64];
-
-    char *argv[] = {"man", "simplestroke", NULL};
-
-    if (subcommand) {
-        strlcpy(buf, "simplestroke_", sizeof(buf));
-        strlcat(buf, subcommand, sizeof(buf));
-        argv[1] = buf;
-    }
-
-    execvp("man", argv);
-
-    // execv returned => an error occurred...
-    perror("execvp");
-    abort();
-}
-
 /* Uses mkdir -p (the system command) to recursively create
    the directory `dir`, if it does not exist.
    Returns true if/after the dir exists, false otherwise.

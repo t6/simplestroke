@@ -48,6 +48,13 @@ load_gestures_cb(stroke_t *stroke,
     }
 }
 
+static void
+simplestroke_detect_usage() {
+    fprintf(stderr,
+            "usage: simplestroke detect [-n]\n"
+            "       simplestroke detect -h\n");
+}
+
 int
 simplestroke_detect(const int argc,
                     char **argv) {
@@ -62,8 +69,8 @@ simplestroke_detect(const int argc,
     while ((ch = getopt_long(argc, argv, "hn", longopts, NULL)) != -1) {
         switch (ch) {
         case 'h':
-            exec_man_for_subcommand(argv[0]);
-            break;
+            simplestroke_detect_usage();
+            return EXIT_FAILURE;
         case 'n':
             no_exec = true;
             break;

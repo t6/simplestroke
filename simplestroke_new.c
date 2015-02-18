@@ -23,7 +23,13 @@
 
 #include "db.h"
 #include "recorder-x11.h"
-#include "util.h"
+
+static void
+simplestroke_new_usage() {
+    fprintf(stderr,
+            "usage: simplestroke new -c command -d description [-w seconds]\n"
+            "       simplestroke new -h\n");
+}
 
 int
 simplestroke_new(const int argc,
@@ -36,8 +42,10 @@ simplestroke_new(const int argc,
         { NULL, 0, NULL, 0 }
     };
 
-    if (argc == 1)
-        exec_man_for_subcommand(argv[0]);
+    if (argc == 1) {
+        simplestroke_new_usage();
+        return EXIT_FAILURE;
+    }
 
     char *description = NULL;
     char *command = NULL;
@@ -63,8 +71,8 @@ simplestroke_new(const int argc,
             command = optarg;
             break;
         case 'h':
-            exec_man_for_subcommand(argv[0]);
-            break;
+            simplestroke_new_usage();
+            return EXIT_FAILURE;
         case '?':
             return EXIT_FAILURE;
         default:
@@ -72,13 +80,8 @@ simplestroke_new(const int argc,
         }
     }
 
-    if (command == NULL) {
-        fprintf(stderr, "Missing argument: --command!\n");
-        return EXIT_FAILURE;
-    }
-
-    if (description == NULL) {
-        fprintf(stderr, "Missing argument: --description!\n");
+    if (command == NULL || description == NULL) {
+        simplestroke_new_usage();
         return EXIT_FAILURE;
     }
 

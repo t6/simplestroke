@@ -15,12 +15,12 @@
  */
 
 #include <assert.h>
-#include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
 
 #include "db.h"
+#include "lib/sqlite3/sqlite3.h"
 #include "util.h"
 
 struct _Database {

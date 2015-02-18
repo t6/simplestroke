@@ -19,9 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "xo.h"
-
 #include "db.h"
+#include "lib/xo/xo.h"
 #include "recorder-x11.h"
 #include "util.h"
 

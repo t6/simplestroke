@@ -1,12 +1,13 @@
 CC = cc
 
 # pkg-config packages
-PKGS = x11 xext xtst sqlite3
+PKGS = x11 xext xtst
 CFLAGS = -g -std=c99 -Wall -Wextra
-CFLAGS += `pkg-config --cflags ${PKGS}` -I lib/xo
+CFLAGS += `pkg-config --cflags ${PKGS}`
 LDFLAGS = -lm `pkg-config --libs ${PKGS}`
 
-SRC = recorder-x11.c \
+SRC = \
+	recorder-x11.c \
 	db.c \
 	stroke.c \
 	util.c \
@@ -15,7 +16,13 @@ SRC = recorder-x11.c \
 	simplestroke_detect.c \
 	simplestroke_export.c
 
-SRC += lib/xo/libxo.c
+CFLAGS += \
+	-DSQLITE_THREADSAFE=1 \
+	-DSQLITE_MAX_WORKER_THREADS=0
+
+SRC += \
+	lib/xo/libxo.c \
+	lib/sqlite3/sqlite3.c
 
 all: options simplestroke readme
 

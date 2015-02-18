@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "xo.h"
+#include "lib/xo/xo.h"
 #include "util.h"
 
 extern int simplestroke_new(const int argc, const char **argv);

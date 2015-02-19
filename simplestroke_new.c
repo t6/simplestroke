@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 #include "db.h"
-#include "recorder-x11.h"
+#include "recorder.h"
 
 static void
 simplestroke_new_usage() {

@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include "db.h"
-#include "recorder-x11.h"
+#include "recorder.h"
 #include "util.h"
 
 typedef struct {

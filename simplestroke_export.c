@@ -21,7 +21,6 @@
 
 #include "db.h"
 #include "lib/xo/xo.h"
-#include "recorder-x11.h"
 
 static int
 simplestroke_export_xo(stroke_t *stroke,

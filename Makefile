@@ -24,7 +24,7 @@ SRC += \
 	lib/xo/libxo.c \
 	lib/sqlite3/sqlite3.c
 
-all: options fmt readme simplestroke
+all: options readme simplestroke
 
 readme:
 	@echo regenerating README from man page

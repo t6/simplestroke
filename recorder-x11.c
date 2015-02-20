@@ -20,7 +20,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include "recorder-x11.h"
+#include "recorder.h"
 
 typedef struct {
     Display *control;

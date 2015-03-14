@@ -14,6 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -149,20 +150,19 @@ simplestroke_export(int argc, char **argv) {
             json_export = true;
             break;
         case 'h':
+        case '?':
             simplestroke_export_usage();
             return EXIT_FAILURE;
         case 'i':
             id = (int)strtol(optarg, NULL, 10);
             if (errno == EINVAL || errno == ERANGE || id < 0) {
-                fprintf(stderr, "--id must be a positive integer!\n");
+                warnx("-i must be a positive integer, was: %s", optarg);
                 return EXIT_FAILURE;
             }
             break;
         case 'c':
             color = optarg;
             break;
-        case '?':
-            return EXIT_FAILURE;
         default:
             break;
         }
@@ -176,30 +176,29 @@ simplestroke_export(int argc, char **argv) {
     const char *error = NULL;
     Database *db = database_open(&error);
     if (error) {
-        fprintf(stderr, "%s\n", error);
+        warnx("%s", error);
         return EXIT_FAILURE;
     }
 
+    int retval = EXIT_FAILURE;
     stroke_t stroke = {};
     char *command = NULL;
     char *description = NULL;
     error = database_load_gesture_with_id(db, id, &stroke,
                                           &description, &command);
-    if (error) {
-        fprintf(stderr, "Problem loading gesture with id %i: %s\n", id, error);
-        return EXIT_FAILURE;
+    if (error)
+        warnx("Problem loading gesture with id %i: %s", id, error);
+    else {
+        if (svg_export)
+            retval = simplestroke_export_svg(&stroke, id, description, command, color);
+        else if (json_export)
+            retval = simplestroke_export_json(&stroke, id, description, command);
+        else
+            retval = simplestroke_export_plain(id, description, command);
+
+        free(command);
+        free(description);
     }
-
-    int retval = EXIT_FAILURE;
-    if (svg_export)
-        retval = simplestroke_export_svg(&stroke, id, description, command, color);
-    else if (json_export)
-        retval = simplestroke_export_json(&stroke, id, description, command);
-    else
-        retval = simplestroke_export_plain(id, description, command);
-
-    free(command);
-    free(description);
     database_close(db);
 
     return retval;

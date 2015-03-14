@@ -14,6 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,13 +70,12 @@ simplestroke_detect(const int argc,
     while ((ch = getopt_long(argc, argv, "hn", longopts, NULL)) != -1) {
         switch (ch) {
         case 'h':
+        case '?':
             simplestroke_detect_usage();
             return EXIT_FAILURE;
         case 'n':
             no_exec = true;
             break;
-        case '?':
-            return EXIT_FAILURE;
         default:
             break;
         }
@@ -84,7 +84,7 @@ simplestroke_detect(const int argc,
     const char *error = NULL;
     Database *db = database_open(&error);
     if (error) {
-        fprintf(stderr, "%s\n", error);
+        warnx("%s", error);
         return EXIT_FAILURE;
     }
 
@@ -95,13 +95,13 @@ simplestroke_detect(const int argc,
                                   };
     error = record_stroke(&state.stroke);
     if (error) {
-        fprintf(stderr, "Failed recording gesture: %s\n", error);
+        warnx("Failed recording gesture: %s", error);
         return EXIT_FAILURE;
     }
 
     error = database_load_gestures(db, load_gestures_cb, &state);
     if (error) {
-        fprintf(stderr, "%s\n", error);
+        warnx("%s", error);
         return EXIT_FAILURE;
     }
 

@@ -14,6 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -58,9 +59,8 @@ simplestroke_new(const int argc,
         case 'w':
             wait = strtol(optarg, NULL, 10);
             if (errno == EINVAL || errno == ERANGE || wait < 0) {
-                fprintf(stderr,
-                        "--wait expects a positive integer, falling back to default of %li seconds!\n",
-                        default_wait);
+                warnx("-w expects a positive integer, falling back to default of %li seconds!\n",
+                      default_wait);
                 wait = default_wait;
             }
             break;
@@ -71,9 +71,8 @@ simplestroke_new(const int argc,
             command = optarg;
             break;
         case 'h':
-            simplestroke_new_usage();
-            return EXIT_FAILURE;
         case '?':
+            simplestroke_new_usage();
             return EXIT_FAILURE;
         default:
             break;
@@ -88,7 +87,7 @@ simplestroke_new(const int argc,
     const char *error = NULL;
     Database *db = database_open(&error);
     if (error) {
-        fprintf(stderr, "%s\n", error);
+        warnx("%s", error);
         return EXIT_FAILURE;
     }
 
@@ -110,14 +109,14 @@ simplestroke_new(const int argc,
     stroke_t stroke = {};
     error = record_stroke(&stroke);
     if (error) {
-        fprintf(stderr, "Failed recording gesture: %s\n", error);
+        warnx("Failed recording gesture: %s", error);
         database_close(db);
         return EXIT_FAILURE;
     }
 
     error = database_add_gesture(db, &stroke, description, command);
     if (error) {
-        fprintf(stderr, "Could not store gesture in database: %s\n", error);
+        warnx("Could not store gesture in database: %s", error);
         database_close(db);
         return EXIT_FAILURE;
     }

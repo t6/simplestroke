@@ -111,14 +111,17 @@ Displays information about the gesture with the id given by
 .Fl i .
 Output goes to
 .Ar stdout .
-This command supports additional machine-readable output formats like
-e.g. XML and JSON via
-.Fl -libxo .
+JSON export is provided for importing and working with the gesture in
+other programs.  SVG export is for displaying the gesture.  Use
+\fBdisplay\fP from the ImageMagick package to view the
+SVG. Alternatively, any modern browser will render SVGs.
 .Bl -tag -width 14n
 .It Fl i Ar id
 The id of the gesture to export.
+.It Fl j
+Output JSON.
 .It Fl s
-Output an SVG image.
+Output a SVG image.
 .It Fl c Ar color
 The stroke color, can be in any format that is supported by SVG.
 .El
@@ -164,9 +167,9 @@ processes.  Draw your gesture and press a mouse button to start detection.
 Note that binding to mouse buttons is currently not possible in \fBi3\fP 4.8.
 .El
 .Sh SEE ALSO
+.Xr display 1
 .Xr i3 1
 .Xr xbindkeys 1
-.Xr xo 1
 .Sh AUTHORS
 .An Tobias Kortkamp Aq tobias.kortkamp@gmail.com
 .Pp

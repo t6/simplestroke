@@ -19,7 +19,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "lib/xo/xo.h"
 #include "util.h"
 
 extern int simplestroke_new(const int argc, const char **argv);
@@ -54,7 +53,6 @@ main(int argc, char **argv) {
         for (int i = 0; i < n; i++) {
             const Subcommand subcmd = subcommands[i];
             if (!strcmp(argv[1], subcmd.name)) {
-                argc = xo_parse_args(argc, argv);
                 if (argc < 0)
                     return EXIT_FAILURE;
                 return subcmd.handler(argc - 1, (const char **)argv + 1);

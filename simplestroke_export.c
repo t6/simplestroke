@@ -18,38 +18,72 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <string.h>
 #include "db.h"
-#include "lib/xo/xo.h"
 
 static int
-simplestroke_export_xo(stroke_t *stroke,
-                       int id,
-                       char *description,
-                       char *command) {
-    xo_open_container("gesture");
-    xo_emit("{e:id/%i}"
-            "{Lwc:Description}{:description/%s}\n"
-            "{Lwc:Command}{:command/%s}\n",
-            id, description, command);
+simplestroke_export_plain(int id,
+                          char *description,
+                          char *command) {
+    printf("Description: %s\nId: %i\nCommand: %s\n", description, id, command);
+    return EXIT_SUCCESS;
+}
 
-    xo_open_list("points");
-    for (int i = 0; i < stroke->n; i++) {
-        xo_open_instance("point");
-        xo_emit("{e:x/%f}{e:y/%f}", stroke->p[i].x, stroke->p[i].y);
-        xo_close_instance("point");
+static char *
+json_escape_string(char *s, size_t n) {
+    char *buf = malloc(n);
+    char *p = buf;
+    for (; *s != 0; s++) {
+        switch (*s) {
+        case '"':
+            *p++ = '\\';
+            break;
+        case '\\':
+            *p++ = '\\';
+            break;
+        default:
+            break;
+        }
+        *p++ = *s;
     }
-    xo_close_list("points");
-    xo_close_container("gesture");
+    *p = 0;
+
+    return buf;
+}
+
+static int
+simplestroke_export_json(stroke_t *stroke,
+                         int id,
+                         char *description_,
+                         char *command_) {
+    // escape " and \ in description and command
+    char *description = json_escape_string(description_, strlen(description_));
+    char *command = json_escape_string(command_, strlen(command_));
+    printf("{\"description\":\"%s\",\"command\":\"%s\",\"id\":%i,",
+           description,
+           command,
+           id);
+    free(description);
+    free(command);
+
+    printf("\"points\":[");
+    for (int i = 0; i < stroke->n; i++) {
+        printf("[%f,%f]%s",
+               stroke->p[i].x,
+               stroke->p[i].y,
+               i == stroke->n - 1 ? "" : ",");
+    }
+    printf("]}\n");
 
     return EXIT_SUCCESS;
 }
 
 static int
-simplestroke_export_as_svg(stroke_t *stroke,
-                           char *description,
-                           char *command,
-                           char *color) {
+simplestroke_export_svg(stroke_t *stroke,
+                        int id,
+                        char *description,
+                        char *command,
+                        char *color) {
     // TODO: need to escape ]]> in description and command (end of CDATA)
     //       by expanding ]]> to ]]]]><![CDATA[>
     const int width = 250;
@@ -60,7 +94,8 @@ simplestroke_export_as_svg(stroke_t *stroke,
            "  <title><![CDATA[%s]]></title>\n"
            "  <!-- command to execute after recognizing this gesture: -->\n"
            "  <desc><![CDATA[%s]]></desc>\n"
-           "  <svg viewBox=\"0 0 1 1\" width='%ipx' height='%ipx'>\n"
+           "  <svg id=\"gesture-%i\" <!-- the id of the gesture -->\n"
+           "       viewBox=\"0 0 1 1\" width='%ipx' height='%ipx'>\n"
            "    <!-- points that make up this gesture -->\n"
            "    <polyline fill='none'\n"
            "              stroke-linejoin='round'\n"
@@ -71,6 +106,7 @@ simplestroke_export_as_svg(stroke_t *stroke,
            width, height,
            description,
            command,
+           id,
            width, height,
            color ? color : "black");
 
@@ -84,7 +120,7 @@ simplestroke_export_as_svg(stroke_t *stroke,
 static void
 simplestroke_export_usage() {
     fprintf(stderr,
-            "usage: simplestroke export -i id [-c color] [-s] [--libxo xoargs]\n"
+            "usage: simplestroke export -i id [-c color] [-s] [-j]\n"
             "       simplestroke export -h\n");
 }
 
@@ -95,17 +131,22 @@ simplestroke_export(int argc, char **argv) {
         { "id", required_argument, NULL, 'i' },
         { "color", required_argument, NULL, 'c' },
         { "svg", no_argument, NULL, 's' },
+        { "json", no_argument, NULL, 'j' },
         { NULL, 0, NULL, 0 }
     };
 
     int ch;
     int id = -1;
     bool svg_export = false;
+    bool json_export = false;
     char *color = NULL;
-    while ((ch = getopt_long(argc, argv, "hc:i:s", longopts, NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, "hc:i:sj", longopts, NULL)) != -1) {
         switch (ch) {
         case 's':
             svg_export = true;
+            break;
+        case 'j':
+            json_export = true;
             break;
         case 'h':
             simplestroke_export_usage();
@@ -149,11 +190,14 @@ simplestroke_export(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    int retval = svg_export
-                 ? simplestroke_export_as_svg(&stroke, description, command, color)
-                 : simplestroke_export_xo(&stroke, id, description, command);
+    int retval = EXIT_FAILURE;
+    if (svg_export)
+        retval = simplestroke_export_svg(&stroke, id, description, command, color);
+    else if (json_export)
+        retval = simplestroke_export_json(&stroke, id, description, command);
+    else
+        retval = simplestroke_export_plain(id, description, command);
 
-    xo_finish();
     free(command);
     free(description);
     database_close(db);

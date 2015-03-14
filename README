@@ -48,13 +48,17 @@ DESCRIPTION
                                  it instead, if any.
 
      export      Displays information about the gesture with the id given by
-                 -i.  Output goes to stdout.  This command supports additional
-                 machine-readable output formats like e.g. XML and JSON via
-                 --libxo.
+                 -i.  Output goes to stdout.  JSON export is provided for
+                 importing and working with the gesture in other programs.
+                 SVG export is for displaying the gesture.  Use display from
+                 the ImageMagick package to view the SVG. Alternatively, any
+                 modern browser will render SVGs.
 
                  -i id           The id of the gesture to export.
 
-                 -s              Output an SVG image.
+                 -j              Output JSON.
+
+                 -s              Output a SVG image.
 
                  -c color        The stroke color, can be in any format that
                                  is supported by SVG.
@@ -91,7 +95,7 @@ EXAMPLES
      Note that binding to mouse buttons is currently not possible in i3 4.8.
 
 SEE ALSO
-     i3(1) xbindkeys(1) xo(1)
+     display(1) i3(1) xbindkeys(1)
 
 AUTHORS
      Tobias Kortkamp <tobias.kortkamp@gmail.com>

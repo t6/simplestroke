@@ -21,7 +21,6 @@ CFLAGS += \
 	-DSQLITE_MAX_WORKER_THREADS=0
 
 SRC += \
-	lib/xo/libxo.c \
 	lib/sqlite3/sqlite3.c
 
 all: options readme simplestroke

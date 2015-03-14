@@ -23,23 +23,27 @@
 .\" help
 .Nm
 .Fl h
-.Nm
 .\" new
+.Nm
 .Cm new
 .Fl d Ar description
 .Fl c Ar command
 .Op Fl w Ar seconds
 .Op Fl h
-.Nm
 .\" detect
+.Nm
 .Cm detect
 .Op Fl hn
-.Nm
 .\" export
+.Nm
 .Cm export
 .Fl i Ar id
 .Op Fl f Ar file
 .Op Fl c Ar color
+.Op Fl h
+.\" list
+.Nm
+.Cm list
 .Op Fl h
 .Sh DESCRIPTION
 .Nm
@@ -115,6 +119,8 @@ JSON export is provided for importing and working with the gesture in
 other programs.  SVG export is for displaying the gesture.  Use
 \fBdisplay\fP from the ImageMagick package to view the
 SVG. Alternatively, any modern browser will render SVGs.
+.Pp
+Outputs SVG by default.
 .Bl -tag -width 14n
 .It Fl i Ar id
 The id of the gesture to export.
@@ -125,6 +131,10 @@ Output a SVG image.
 .It Fl c Ar color
 The stroke color, can be in any format that is supported by SVG.
 .El
+.\" list
+.It Cm list
+Lists all gestures.  Output goes to
+.Ar stdout .
 .El
 .Sh EXAMPLES
 .Ss STARTING DETECTION

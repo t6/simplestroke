@@ -8,6 +8,7 @@ SYNOPSIS
      simplestroke new -d description -c command [-w seconds] [-h]
      simplestroke detect [-hn]
      simplestroke export -i id [-f file] [-c color] [-h]
+     simplestroke list [-h]
 
 DESCRIPTION
      simplestroke is a gesture detection application.  It is backed by a
@@ -54,6 +55,8 @@ DESCRIPTION
                  the ImageMagick package to view the SVG. Alternatively, any
                  modern browser will render SVGs.
 
+                 Outputs SVG by default.
+
                  -i id           The id of the gesture to export.
 
                  -j              Output JSON.
@@ -62,6 +65,8 @@ DESCRIPTION
 
                  -c color        The stroke color, can be in any format that
                                  is supported by SVG.
+
+     list        Lists all gestures.  Output goes to stdout.
 
 EXAMPLES
    STARTING DETECTION

@@ -44,10 +44,10 @@ static const char *insert_gesture_sql =
         VALUES (?, ?, ?, ?);";
 
 static const char *load_gestures_sql =
-    "SELECT points, description, command FROM gesture;";
+    "SELECT id, points, description, command FROM gesture ORDER BY id ASC;";
 
 static const char *load_gesture_with_id_sql =
-    "SELECT points, description, command FROM gesture WHERE id = ? LIMIT 1;";
+    "SELECT id, points, description, command FROM gesture WHERE id = ? LIMIT 1;";
 
 /* Opens the database, creating it and the configuration directory if necessary.
    Returns the database handle and sets error to NULL if successful, otherwise
@@ -182,26 +182,32 @@ database_add_gesture(Database *db,
 
 static void
 _database_load_gesture(sqlite3_stmt *stmt,
+                       int *id,
                        stroke_t *stroke,
                        char **description,
                        char **command) {
     assert(stmt);
 
-    assert(sqlite3_column_type(stmt, 0) == SQLITE_BLOB);
-    assert(sqlite3_column_type(stmt, 1) == SQLITE_TEXT);
+    assert(sqlite3_column_type(stmt, 0) == SQLITE_INTEGER);
+    assert(sqlite3_column_type(stmt, 1) == SQLITE_BLOB);
     assert(sqlite3_column_type(stmt, 2) == SQLITE_TEXT);
+    assert(sqlite3_column_type(stmt, 3) == SQLITE_TEXT);
+
+    if (id)
+        *id = sqlite3_column_int(stmt, 0);
 
     if (stroke) {
-        point *points = (point *)sqlite3_column_blob(stmt, 0);
-        int n = sqlite3_column_bytes(stmt, 0);
+        point *points = (point *)sqlite3_column_blob(stmt, 1);
+        int n = sqlite3_column_bytes(stmt, 1);
         memcpy(stroke->p, points, n);
         stroke->n = n / sizeof(point);
     }
 
+
     if (description)
-        *description = strdup((char *)sqlite3_column_text(stmt, 1));
+        *description = strdup((char *)sqlite3_column_text(stmt, 2));
     if (command)
-        *command = strdup((char *)sqlite3_column_text(stmt, 2));
+        *command = strdup((char *)sqlite3_column_text(stmt, 3));
 }
 
 const char *
@@ -215,6 +221,7 @@ database_load_gestures(Database *db,
     while (true) {
         int status = sqlite3_step(db->load_gestures_stmt);
         stroke_t stroke = {};
+        int id = -1;
         char *description = NULL;
         char *command = NULL;
 
@@ -224,11 +231,12 @@ database_load_gestures(Database *db,
             return NULL;
         case SQLITE_ROW:
             _database_load_gesture(db->load_gestures_stmt,
+                                   &id,
                                    &stroke,
                                    &description,
                                    &command);
             if (cb)
-                cb(&stroke, description, command, user_data);
+                cb(&stroke, id, description, command, user_data);
             break;
         default:
             return sqlite3_errstr(status);
@@ -255,6 +263,7 @@ database_load_gesture_with_id(Database *db,
         return "not found";
 
     _database_load_gesture(db->load_gesture_with_id_stmt,
+                           NULL,
                            stroke,
                            description,
                            command);

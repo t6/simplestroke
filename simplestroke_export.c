@@ -22,14 +22,6 @@
 #include <string.h>
 #include "db.h"
 
-static int
-simplestroke_export_plain(int id,
-                          char *description,
-                          char *command) {
-    printf("Description: %s\nId: %i\nCommand: %s\n", description, id, command);
-    return EXIT_SUCCESS;
-}
-
 static char *
 json_escape_string(char *s, size_t n) {
     char *buf = malloc(n);
@@ -138,8 +130,7 @@ simplestroke_export(int argc, char **argv) {
 
     int ch;
     int id = -1;
-    bool svg_export = false;
-    bool json_export = false;
+    bool svg_export = true;
     char *color = NULL;
     while ((ch = getopt_long(argc, argv, "hc:i:sj", longopts, NULL)) != -1) {
         switch (ch) {
@@ -147,7 +138,7 @@ simplestroke_export(int argc, char **argv) {
             svg_export = true;
             break;
         case 'j':
-            json_export = true;
+            svg_export = false;
             break;
         case 'h':
         case '?':
@@ -191,10 +182,8 @@ simplestroke_export(int argc, char **argv) {
     else {
         if (svg_export)
             retval = simplestroke_export_svg(&stroke, id, description, command, color);
-        else if (json_export)
-            retval = simplestroke_export_json(&stroke, id, description, command);
         else
-            retval = simplestroke_export_plain(id, description, command);
+            retval = simplestroke_export_json(&stroke, id, description, command);
 
         free(command);
         free(description);

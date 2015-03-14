@@ -33,6 +33,7 @@ typedef struct {
 
 static void
 load_gestures_cb(stroke_t *stroke,
+                 __attribute__((unused)) int id,
                  char *description,
                  char *command,
                  const void *user_data) {

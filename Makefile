@@ -14,7 +14,8 @@ SRC = \
 	simplestroke.c \
 	simplestroke_new.c \
 	simplestroke_detect.c \
-	simplestroke_export.c
+	simplestroke_export.c \
+	simplestroke_list.c
 
 CFLAGS += \
 	-DSQLITE_THREADSAFE=1 \

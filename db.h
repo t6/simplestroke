@@ -21,8 +21,9 @@
 struct _Database;
 typedef struct _Database Database;
 
-typedef void (*LoadGesturesCallback)(stroke_t *stroke, char *description,
-                                     char *command, const void *user_data);
+typedef void (*LoadGesturesCallback)(stroke_t *stroke, int id,
+                                     char *description, char *command,
+                                     const void *user_data);
 
 Database *database_open(/* out */ const char **error);
 const char *database_close(Database *db);

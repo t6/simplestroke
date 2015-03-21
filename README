@@ -9,7 +9,7 @@ SYNOPSIS
      simplestroke delete -i id [-h]
      simplestroke detect [-hn]
      simplestroke export -i id [-f file] [-c color] [-h]
-     simplestroke list [-h]
+     simplestroke list [-j] [-h]
 
 DESCRIPTION
      simplestroke is a gesture detection application.  It is backed by a
@@ -64,7 +64,7 @@ DESCRIPTION
 
                  -i id           The id of the gesture to export.
 
-                 -j              Output JSON.
+                 -j              Output gesture in JSON.
 
                  -s              Output a SVG image.
 
@@ -72,6 +72,8 @@ DESCRIPTION
                                  is supported by SVG.
 
      list        Lists all gestures.  Output goes to stdout.
+
+     -j          Outputs list in JSON.
 
 EXAMPLES
    STARTING DETECTION

@@ -23,5 +23,6 @@ void config_home(char *buf, size_t len);
 void config_dir(char *buf, size_t len);
 bool mkdirs(char *path);
 void exec_commandline(const char *commandline);
+void json_dump_string(const char *s, size_t n);
 
 #endif

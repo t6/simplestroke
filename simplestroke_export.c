@@ -20,46 +20,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "db.h"
-
-static char *
-json_escape_string(char *s, size_t n) {
-    char *buf = malloc(n);
-    char *p = buf;
-    for (; *s != 0; s++) {
-        switch (*s) {
-        case '"':
-            *p++ = '\\';
-            break;
-        case '\\':
-            *p++ = '\\';
-            break;
-        default:
-            break;
-        }
-        *p++ = *s;
-    }
-    *p = 0;
-
-    return buf;
-}
+#include "util.h"
 
 static int
 simplestroke_export_json(stroke_t *stroke,
                          int id,
-                         char *description_,
-                         char *command_) {
-    // escape " and \ in description and command
-    char *description = json_escape_string(description_, strlen(description_));
-    char *command = json_escape_string(command_, strlen(command_));
-    printf("{\"description\":\"%s\",\"command\":\"%s\",\"id\":%i,",
-           description,
-           command,
-           id);
-    free(description);
-    free(command);
+                         char *description,
+                         char *command) {
+    printf("{\"description\":");
+    json_dump_string(description, strlen(description));
 
-    printf("\"points\":[");
+    printf(",\"command\":");
+    json_dump_string(command, strlen(command));
+
+    printf(",\"id\":%i,\"points\":[", id);
     for (int i = 0; i < stroke->n; i++) {
         printf("[%f,%f]%s",
                stroke->p[i].x,

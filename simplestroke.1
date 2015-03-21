@@ -49,6 +49,7 @@
 .\" list
 .Nm
 .Cm list
+.Op Fl j
 .Op Fl h
 .Sh DESCRIPTION
 .Nm
@@ -139,7 +140,7 @@ Outputs SVG by default.
 .It Fl i Ar id
 The id of the gesture to export.
 .It Fl j
-Output JSON.
+Output gesture in JSON.
 .It Fl s
 Output a SVG image.
 .It Fl c Ar color
@@ -149,6 +150,8 @@ The stroke color, can be in any format that is supported by SVG.
 .It Cm list
 Lists all gestures.  Output goes to
 .Ar stdout .
+.It Fl j
+Outputs list in JSON.
 .El
 .Sh EXAMPLES
 .Ss STARTING DETECTION

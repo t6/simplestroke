@@ -12,10 +12,11 @@ SRC = \
 	stroke.c \
 	util.c \
 	simplestroke.c \
-	simplestroke_new.c \
+	simplestroke_delete.c \
 	simplestroke_detect.c \
 	simplestroke_export.c \
-	simplestroke_list.c
+	simplestroke_list.c \
+	simplestroke_new.c
 
 CFLAGS += \
 	-DSQLITE_THREADSAFE=1 \

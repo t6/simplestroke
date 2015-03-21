@@ -6,6 +6,7 @@ NAME
 SYNOPSIS
      simplestroke -h
      simplestroke new -d description -c command [-w seconds] [-h]
+     simplestroke delete -i id [-h]
      simplestroke detect [-hn]
      simplestroke export -i id [-f file] [-c color] [-h]
      simplestroke list [-h]
@@ -35,6 +36,10 @@ DESCRIPTION
                                  this behavior with -w.  If seconds is 0,
                                  simplestroke will start recording your mouse
                                  movements immediately.
+
+     delete      This mode removes the given gesture from the database.
+
+                 -i id           The id of the gesture to delete.
 
      detect      This mode starts gesture detection.  Draw your gesture and
                  then confirm by clicking any mouse button.

@@ -29,6 +29,7 @@ Database *database_open(/* out */ const char **error);
 const char *database_close(Database *db);
 const char *database_add_gesture(Database *db, stroke_t *stroke,
                                  const char *description, const char *command);
+const char *database_delete_gesture_with_id(Database *db, int id);
 const char *database_load_gestures(Database *db, LoadGesturesCallback cb,
                                    const void *user_data);
 const char *database_load_gesture_with_id(Database *db, int id,

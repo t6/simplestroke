@@ -28,6 +28,7 @@ struct _Database {
     sqlite3_stmt *insert_gesture_stmt;
     sqlite3_stmt *load_gestures_stmt;
     sqlite3_stmt *load_gesture_with_id_stmt;
+    sqlite3_stmt *delete_gesture_with_id_stmt;
 };
 
 static const char *schema =
@@ -48,6 +49,10 @@ static const char *load_gestures_sql =
 
 static const char *load_gesture_with_id_sql =
     "SELECT id, points, description, command FROM gesture WHERE id = ? LIMIT 1;";
+
+static const char *delete_gesture_with_id_sql =
+    "DELETE FROM gesture WHERE id = ?;";
+
 
 /* Opens the database, creating it and the configuration directory if necessary.
    Returns the database handle and sets error to NULL if successful, otherwise
@@ -109,6 +114,15 @@ database_open(/* out */ const char **error) {
         goto error;
     }
 
+    if (SQLITE_OK != sqlite3_prepare_v2(db->db,
+                                        delete_gesture_with_id_sql,
+                                        -1,
+                                        &db->delete_gesture_with_id_stmt,
+                                        NULL)) {
+        *error = sqlite3_errstr(sqlite3_extended_errcode(db->db));
+        goto error;
+    }
+
     return db;
 
 error:
@@ -116,6 +130,10 @@ error:
         sqlite3_finalize(db->insert_gesture_stmt);
     if (db->load_gestures_stmt)
         sqlite3_finalize(db->load_gestures_stmt);
+    if (db->load_gesture_with_id_stmt)
+        sqlite3_finalize(db->load_gesture_with_id_stmt);
+    if (db->delete_gesture_with_id_stmt)
+        sqlite3_finalize(db->delete_gesture_with_id_stmt);
     if (db->db)
         sqlite3_close(db->db);
     free(db);
@@ -133,6 +151,8 @@ database_close(Database *db) {
         sqlite3_finalize(db->load_gestures_stmt);
     if (db->load_gesture_with_id_stmt)
         sqlite3_finalize(db->load_gesture_with_id_stmt);
+    if (db->delete_gesture_with_id_stmt)
+        sqlite3_finalize(db->delete_gesture_with_id_stmt);
 
     const int status = sqlite3_close_v2(db->db);
     free(db);
@@ -275,5 +295,21 @@ database_load_gesture_with_id(Database *db,
     }
 
     sqlite3_reset(db->load_gesture_with_id_stmt);
+    return NULL;
+}
+
+const char *
+database_delete_gesture_with_id(Database *db, int id) {
+    sqlite3_clear_bindings(db->delete_gesture_with_id_stmt);
+    sqlite3_reset(db->delete_gesture_with_id_stmt);
+
+    if (SQLITE_OK != sqlite3_bind_int(db->delete_gesture_with_id_stmt, 1, id))
+        return sqlite3_errstr(sqlite3_extended_errcode(db->db));
+
+    int status = sqlite3_step(db->delete_gesture_with_id_stmt);
+    if (status != SQLITE_DONE)
+        return "not found";
+
+    sqlite3_reset(db->delete_gesture_with_id_stmt);
     return NULL;
 }

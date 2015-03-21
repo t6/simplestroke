@@ -21,10 +21,11 @@
 
 #include "util.h"
 
-extern int simplestroke_new(const int argc, const char **argv);
+extern int simplestroke_delete(const int argc, const char **argv);
 extern int simplestroke_detect(const int argc, const char **argv);
 extern int simplestroke_export(const int argc, const char **argv);
 extern int simplestroke_list(const int argc, const char **argv);
+extern int simplestroke_new(const int argc, const char **argv);
 
 typedef struct {
     char *name;
@@ -32,10 +33,11 @@ typedef struct {
 } Subcommand;
 
 static Subcommand subcommands[] = {
-    { "new", simplestroke_new },
+    { "delete", simplestroke_delete },
     { "detect", simplestroke_detect },
     { "export", simplestroke_export },
     { "list", simplestroke_list },
+    { "new", simplestroke_new },
 };
 
 static void

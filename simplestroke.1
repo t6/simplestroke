@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2015, Tobias Kortkamp <tobias.kortkamp@gmail.com>
+.\" Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
 .\"
 .\" Permission to use, copy, modify, and/or distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -29,6 +29,11 @@
 .Fl d Ar description
 .Fl c Ar command
 .Op Fl w Ar seconds
+.Op Fl h
+.\" delete
+.Nm
+.Cm delete
+.Fl i Ar id
 .Op Fl h
 .\" detect
 .Nm
@@ -92,6 +97,15 @@ If
 is 0,
 .Nm
 will start recording your mouse movements immediately.
+.El
+.\" delete
+.It Cm delete
+This mode removes the given gesture from the database.
+.Bl -tag -width 14n
+.It Fl i Ar id
+The
+.Ar id
+of the gesture to delete.
 .El
 .\" detect
 .It Cm detect

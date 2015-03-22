@@ -1,10 +1,14 @@
-CC = cc
+PREFIX ?= /usr/local
+BINDIR ?= ${PREFIX}/bin
+MANDIR ?= ${PREFIX}/man/man1
 
-# pkg-config packages
-PKGS = x11 xext xtst
+NAME = simplestroke
 CFLAGS = -g -std=c99 -Wall -Wextra
+LDFLAGS = -lm
+
+PKGS = x11 xext xtst
 CFLAGS += `pkg-config --cflags ${PKGS}`
-LDFLAGS = -lm `pkg-config --libs ${PKGS}`
+LDFLAGS += `pkg-config --libs ${PKGS}`
 
 SRC = \
 	recorder-x11.c \
@@ -25,31 +29,45 @@ CFLAGS += \
 SRC += \
 	lib/sqlite3/sqlite3.c
 
-all: options readme simplestroke
+all: options readme ${NAME}
 
 readme:
-	@echo regenerating README from man page
-	@mandoc -Tascii simplestroke.1 | col -bx > README
+	@echo Regenerating README from man page
+	@mandoc -Tascii ${NAME}.1 | col -bx > README
 
 options:
-	@echo simplestroke build options:
+	@echo ${NAME} build options:
 	@echo "CC      = ${CC}"
 	@echo "CFLAGS  = ${CFLAGS}"
 	@echo "LDFLAGS = ${LDFLAGS}"
 
 fmt:
-	@echo formatting code
+	@echo Formatting code
 	@astyle --options=astylerc *.c *.h
 
-simplestroke: ${SRC:.c=.o}
-	@echo Linking simplestroke
+${NAME}: ${SRC:.c=.o}
+	@echo Linking ${NAME}
 	@${CC} ${CFLAGS} ${LDFLAGS} -o $@ ${SRC:.c=.o}
 
 .c.o:
 	@echo CC $<
 	@${CC} ${CFLAGS} -c $< -o ${<:.c=.o}
 
-clean:
-	rm -f ${SRC:.c=.o} simplestroke
+install-options:
+	@echo ${NAME} install options:
+	@echo "PREFIX = ${PREFIX}"
+	@echo "BINDIR = ${BINDIR}"
+	@echo "MANDIR = ${MANDIR}"
 
-.PHONY: all clean simplestroke options
+install: install-options
+	@echo Installing ${NAME}
+	@mkdir -p ${BINDIR}
+	@install -m 755 ${NAME} ${BINDIR}
+	@mkdir -p ${MANDIR}
+	@install -m 444 ${NAME}.1 ${MANDIR}
+	@gzip -f ${MANDIR}/${NAME}.1
+
+clean:
+	rm -f ${SRC:.c=.o} ${NAME}
+
+.PHONY: all clean ${NAME} options install install-options

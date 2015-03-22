@@ -42,7 +42,7 @@ static Subcommand subcommands[] = {
 
 static void
 open_man_page() {
-    char *argv[] = {"man", "./simplestroke.1", NULL};
+    char *argv[] = {"man", "1", "simplestroke", NULL};
     execvp("man", argv);
 
     // execv returned => an error occurred...

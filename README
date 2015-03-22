@@ -73,7 +73,7 @@ DESCRIPTION
 
      list        Lists all gestures.  Output goes to stdout.
 
-     -j          Outputs list in JSON.
+                 -j              Outputs list in JSON.
 
 EXAMPLES
    STARTING DETECTION

@@ -2,32 +2,22 @@ PREFIX ?= /usr/local
 BINDIR ?= ${PREFIX}/bin
 MANDIR ?= ${PREFIX}/man/man1
 
+# alternative SYSMOUSE
+TRACKER ?= XLIB
+
 NAME = simplestroke
-CFLAGS = -g -std=c99 -Wall -Wextra
+CFLAGS = -g -std=c99 -Wall -Wextra -DUSE_${TRACKER}_TRACKER
 LDFLAGS = -lm
 
 PKGS = x11 xext xtst
-CFLAGS += `pkg-config --cflags ${PKGS}`
-LDFLAGS += `pkg-config --libs ${PKGS}`
+# not using .if here to stay compatible with GNU Make
+CFLAGS += `[ "${TRACKER}" = "XLIB" ] && pkg-config --cflags ${PKGS}`
+LDFLAGS += `[ "${TRACKER}" = "XLIB" ] && pkg-config --libs ${PKGS}`
 
-SRC = \
-	recorder-x11.c \
-	db.c \
-	stroke.c \
-	util.c \
-	simplestroke.c \
-	simplestroke_delete.c \
-	simplestroke_detect.c \
-	simplestroke_export.c \
-	simplestroke_list.c \
-	simplestroke_new.c
+SRC != echo *.c
 
-CFLAGS += \
-	-DSQLITE_THREADSAFE=1 \
-	-DSQLITE_MAX_WORKER_THREADS=0
-
-SRC += \
-	lib/sqlite3/sqlite3.c
+CFLAGS += -DSQLITE_THREADSAFE=1 -DSQLITE_MAX_WORKER_THREADS=0
+SRC += lib/sqlite3/sqlite3.c
 
 all: options readme ${NAME}
 
@@ -40,6 +30,7 @@ options:
 	@echo "CC      = ${CC}"
 	@echo "CFLAGS  = ${CFLAGS}"
 	@echo "LDFLAGS = ${LDFLAGS}"
+	@echo "TRACKER = ${TRACKER}"
 
 fmt:
 	@echo Formatting code

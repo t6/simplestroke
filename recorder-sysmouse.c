@@ -14,6 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef USE_SYSMOUSE_TRACKER
+
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -88,3 +90,5 @@ record_stroke(/* out */ stroke_t *stroke) {
 
     return NULL;
 }
+
+#endif

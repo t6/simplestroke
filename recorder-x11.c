@@ -93,34 +93,36 @@ record_callback(XPointer closure, XRecordInterceptData *record_data) {
     XRecordFreeData(record_data);
 }
 
-const char *
+char *
 record_stroke(/* out */ stroke_t *stroke) {
     assert(stroke);
 
-    RecorderState state = { .control = XOpenDisplay(NULL),
-                            .data = XOpenDisplay(NULL),
-                            .range = XRecordAllocRange(),
-                            .track = true,
-                            .stroke = stroke,
-                            .context = 0,
-                            .x = 0,
-                            .y = 0
-                          };
+    RecorderState state = {
+        .control = XOpenDisplay(NULL),
+        .data = XOpenDisplay(NULL),
+        .range = XRecordAllocRange(),
+        .track = true,
+        .stroke = stroke,
+        .context = 0,
+        .x = 0,
+        .y = 0
+    };
 
     // See http://www.x.org/docs/Xext/recordlib.pdf
     if (!state.control) {
         record_cleanup(&state);
-        return "Could not open control display";
+        return strdup("Could not open control display");
     }
     if (!state.data) {
         record_cleanup(&state);
-        return "Could not open data display";
+        return strdup("Could not open data display");
     }
 
     if (!state.range) {
         record_cleanup(&state);
-        return "Could not create record range";
+        return strdup("Could not create record range");
     }
+
     state.range->device_events.first = KeyPress;
     state.range->device_events.last = MotionNotify;
 
@@ -129,7 +131,7 @@ record_stroke(/* out */ stroke_t *stroke) {
                                          1);
     if (!state.context) {
         record_cleanup(&state);
-        return "Could not create record context";
+        return strdup("Could not create record context");
     }
 
     XSync(state.control, True);
@@ -139,7 +141,7 @@ record_stroke(/* out */ stroke_t *stroke) {
                                        &record_callback,
                                        (XPointer)&state)) {
         record_cleanup(&state);
-        return "could not enable data transfer between recording client and X server";
+        return strdup("could not enable data transfer between recording client and X server");
     }
 
     while (state.track) {

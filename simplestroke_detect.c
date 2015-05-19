@@ -97,6 +97,7 @@ simplestroke_detect(const int argc,
     error = record_stroke(&state.stroke);
     if (error) {
         warnx("Failed recording gesture: %s", error);
+        free(error);
         return EXIT_FAILURE;
     }
 

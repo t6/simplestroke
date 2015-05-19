@@ -16,8 +16,10 @@
 
 #ifdef USE_SYSMOUSE_TRACKER
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -47,7 +49,7 @@ button_released(mousestatus_t *status) {
 #undef RELEASED
 }
 
-const char *
+char *
 record_stroke(/* out */ stroke_t *stroke) {
     mousestatus_t mouse_status;
     int x = 0;
@@ -55,8 +57,11 @@ record_stroke(/* out */ stroke_t *stroke) {
     int status = 0;
 
     int mouse = open("/dev/sysmouse", O_RDONLY);
-    if (mouse == -1)
-        return strerror(mouse);
+    if (mouse == -1) {
+        char *error;
+        asprintf(&error, "Error opening /dev/sysmouse: %s", strerror(errno));
+        return error;
+    }
 
     while (true) {
         usleep(50);

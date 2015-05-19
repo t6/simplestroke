@@ -1,7 +1,7 @@
 SIMPLESTROKE(1)         FreeBSD General Commands Manual        SIMPLESTROKE(1)
 
 NAME
-     simplestroke -- a gesture recognition application
+     simplestroke - a gesture recognition application
 
 SYNOPSIS
      simplestroke -h
@@ -115,4 +115,4 @@ AUTHORS
      simplestroke is inspired and based on easystroke 0.6.0 written by Thomas
      Jaeger <ThJaeger@gmail.com>.
 
-FreeBSD 10.1                   February 18, 2015                  FreeBSD 10.1
+FreeBSD 11.0-CURRENT           February 18, 2015          FreeBSD 11.0-CURRENT

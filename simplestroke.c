@@ -14,9 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 #include <unistd.h>
 
 #include "util.h"
@@ -45,9 +47,8 @@ open_man_page() {
     char *argv[] = {"man", "1", "simplestroke", NULL};
     execvp("man", argv);
 
-    // execv returned => an error occurred...
-    perror("execvp");
-    abort();
+    // execvp returned => an error occurred...
+    err(EX_OSERR, "execvp");
 }
 
 int

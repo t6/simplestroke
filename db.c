@@ -15,9 +15,13 @@
  */
 
 #include <assert.h>
+#include <err.h>
+#include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/param.h>
+#include <sysexits.h>
 
 #include "db.h"
 #include "lib/sqlite3/sqlite3.h"
@@ -61,21 +65,31 @@ Database *
 database_open(/* out */ const char **error) {
     assert(error);
     Database *db = malloc(sizeof(Database));
-    assert(db);
+    if (db == NULL)
+        err(EX_OSERR, "malloc");
+
     *error = NULL;
 
-    char path[MAXPATHLEN];
-    config_dir(path, sizeof(path));
-    if (!mkdirs(path)) {
+    char *confdir = config_dir();
+    if (!mkdirs(confdir)) {
         *error = "Could not create config directory";
         goto error;
     }
-    strlcat(path, "/simplestroke.sqlite", sizeof(path));
+
+    char *dbpath;
+    if (asprintf(&dbpath, "%s/simplestroke.sqlite", confdir) < 0) {
+        *error = strerror(errno);
+        free(confdir);
+        goto error;
+    }
+
+    free(confdir);
 
     const int status
-        = sqlite3_open_v2(path, &db->db,
+        = sqlite3_open_v2(dbpath, &db->db,
                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
                           NULL);
+    free(dbpath);
     if (SQLITE_OK != status) {
         *error = sqlite3_errstr(status);
         goto error;
@@ -238,7 +252,7 @@ database_load_gestures(Database *db,
 
     sqlite3_reset(db->load_gestures_stmt);
 
-    while (true) {
+    while (cb) {
         int status = sqlite3_step(db->load_gestures_stmt);
         stroke_t stroke = {};
         int id = -1;
@@ -255,13 +269,14 @@ database_load_gestures(Database *db,
                                    &stroke,
                                    &description,
                                    &command);
-            if (cb)
-                cb(&stroke, id, description, command, user_data);
+            cb(&stroke, id, description, command, user_data);
             break;
         default:
             return sqlite3_errstr(status);
         }
     }
+
+    return NULL;
 }
 
 const char *

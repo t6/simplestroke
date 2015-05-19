@@ -14,40 +14,39 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "util.h"
 
-void
-config_home(char *buf,
-            size_t len) {
+char *
+config_dir() {
+    char *dir = NULL;
+
     // From the XDG Base Directory Specification:
     // If $XDG_CONFIG_HOME is either not set or empty,
     // a default equal to $HOME/.config should be used.
 
     const char *config_dir = getenv("XDG_CONFIG_HOME");
-    if (config_dir && strcmp(config_dir, "") != 0)
-        strlcpy(buf, config_dir, len);
-    else {
+    if (config_dir && strcmp(config_dir, "") != 0) {
+        if (asprintf(&dir, "%s/%s", config_dir, "simplestroke") < 0)
+            err(EX_OSERR, "asprintf");
+    } else {
         char *home = getenv("HOME");
         if (!home)
-            abort();
+            err(EXIT_FAILURE, "$HOME not set?");
 
-        strlcpy(buf, home, len);
-        strlcat(buf, "/.config", len);
+        if (asprintf(&dir, "%s/.config/%s", home, "simplestroke") < 0)
+            err(EX_OSERR, "asprintf");
     }
-}
 
-void
-config_dir(char *buf,
-           size_t len) {
-    config_home(buf, len);
-    strlcat(buf, "/simplestroke", len);
+    return dir;
 }
 
 /* Uses mkdir -p (the system command) to recursively create

@@ -54,8 +54,7 @@ open_man_page() {
 int
 main(int argc, char **argv) {
     if (argc > 1) {
-        const int n = sizeof(subcommands) / sizeof(Subcommand);
-        for (int i = 0; i < n; i++) {
+        for (size_t i = 0; i < nitems(subcommands); i++) {
             const Subcommand subcmd = subcommands[i];
             if (!strcmp(argv[1], subcmd.name)) {
                 if (argc < 0)

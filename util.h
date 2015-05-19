@@ -18,9 +18,13 @@
 
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 
-void config_home(char *buf, size_t len);
-void config_dir(char *buf, size_t len);
+#ifndef nitems
+    #define nitems(x) (sizeof((x)) / sizeof((x)[0]))
+#endif
+
+/* free */ char *config_dir();
 bool mkdirs(char *path);
 void exec_commandline(const char *commandline);
 void json_dump_string(const char *s, size_t n);

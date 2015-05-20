@@ -95,20 +95,11 @@ simplestroke_export_usage() {
 
 int
 simplestroke_export(int argc, char **argv) {
-    struct option longopts[] = {
-        { "help",  no_argument, NULL, 'h' },
-        { "id", required_argument, NULL, 'i' },
-        { "color", required_argument, NULL, 'c' },
-        { "svg", no_argument, NULL, 's' },
-        { "json", no_argument, NULL, 'j' },
-        { NULL, 0, NULL, 0 }
-    };
-
     int ch;
     int id = -1;
     bool svg_export = true;
     char *color = NULL;
-    while ((ch = getopt_long(argc, argv, "hc:i:sj", longopts, NULL)) != -1) {
+    while ((ch = getopt(argc, argv, "hc:i:sj")) != -1) {
         switch (ch) {
         case 's':
             svg_export = true;
@@ -118,6 +109,7 @@ simplestroke_export(int argc, char **argv) {
             break;
         case 'h':
         case '?':
+        case ':':
             simplestroke_export_usage();
             return EXIT_FAILURE;
         case 'i':

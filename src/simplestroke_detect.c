@@ -60,18 +60,13 @@ simplestroke_detect_usage() {
 int
 simplestroke_detect(const int argc,
                     char **argv) {
-    struct option longopts[] = {
-        { "help",  no_argument, NULL, 'h' },
-        { "no-exec", no_argument, NULL, 'n'},
-        { NULL, 0, NULL, 0 }
-    };
-
     bool no_exec = false;
     int ch;
-    while ((ch = getopt_long(argc, argv, "hn", longopts, NULL)) != -1) {
+    while ((ch = getopt(argc, argv, "hn")) != -1) {
         switch (ch) {
         case 'h':
         case '?':
+        case ':':
             simplestroke_detect_usage();
             return EXIT_FAILURE;
         case 'n':

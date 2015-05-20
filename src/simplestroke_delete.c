@@ -31,18 +31,13 @@ simplestroke_delete_usage() {
 
 int
 simplestroke_delete(int argc, char **argv) {
-    struct option longopts[] = {
-        { "help",  no_argument, NULL, 'h' },
-        { "id", required_argument, NULL, 'i' },
-        { NULL, 0, NULL, 0 }
-    };
-
     int ch;
     int id = -1;
-    while ((ch = getopt_long(argc, argv, "hi:", longopts, NULL)) != -1) {
+    while ((ch = getopt(argc, argv, "hi:")) != -1) {
         switch (ch) {
         case 'h':
         case '?':
+        case ':':
             simplestroke_delete_usage();
             return EXIT_FAILURE;
         case 'i':

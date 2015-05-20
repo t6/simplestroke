@@ -35,14 +35,6 @@ simplestroke_new_usage() {
 int
 simplestroke_new(const int argc,
                  char **argv) {
-    struct option longopts[] = {
-        { "help",  no_argument, NULL, 'h' },
-        { "description", required_argument, NULL, 'd' },
-        { "command", required_argument, NULL, 'c' },
-        { "wait", optional_argument, NULL, 'w' },
-        { NULL, 0, NULL, 0 }
-    };
-
     if (argc == 1) {
         simplestroke_new_usage();
         return EXIT_FAILURE;
@@ -54,7 +46,7 @@ simplestroke_new(const int argc,
     const long default_wait = 2;
     long wait = default_wait;
     int ch;
-    while ((ch = getopt_long(argc, argv, "hw:d:c:", longopts, NULL)) != -1) {
+    while ((ch = getopt(argc, argv, "hw:d:c:")) != -1) {
         switch (ch) {
         case 'w':
             wait = strtol(optarg, NULL, 10);
@@ -72,6 +64,7 @@ simplestroke_new(const int argc,
             break;
         case 'h':
         case '?':
+        case ':':
             simplestroke_new_usage();
             return EXIT_FAILURE;
         default:

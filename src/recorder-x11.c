@@ -20,6 +20,7 @@
 #include <X11/Xproto.h>
 #include <X11/extensions/record.h>
 #include <assert.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "recorder.h"

@@ -24,7 +24,7 @@
 #include <sysexits.h>
 
 #include "db.h"
-#include "lib/sqlite3/sqlite3.h"
+#include <sqlite3.h>
 #include "util.h"
 
 struct _Database {

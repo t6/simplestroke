@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef HAVE_BSD_STRING_H
-#include <bsd/string.h>
+    #include <bsd/string.h>
 #endif
 
 #include "db.h"
@@ -95,7 +95,7 @@ simplestroke_detect(const int argc,
     error = record_stroke(&state.stroke);
     if (error) {
         warnx("Failed recording gesture: %s", error);
-        free((void*)error);
+        free((void *)error);
         return EXIT_FAILURE;
     }
 

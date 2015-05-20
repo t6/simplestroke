@@ -27,6 +27,7 @@
 /* free */ char *config_dir();
 bool mkdirs(char *path);
 void exec_commandline(const char *commandline);
+void reverse(char *bytes, size_t len);
 void json_dump_string(const char *s, size_t n);
 
 #endif

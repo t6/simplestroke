@@ -90,9 +90,22 @@ exec_commandline(const char *commandline) {
     execv("/bin/sh", argv);
 
     // execv returned => an error occurred...
-    perror("execvp");
-    abort();
+    err(EX_OSERR, "execvp");
 }
+
+void
+reverse(char *s, size_t len) {
+    if (len == 0) return;
+
+    char c;
+    size_t i, j;
+    for (i = 0, j = len - 1; i < j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
 
 /* The following four functions are liberated from Jansson
    Copyright (c) 2009-2014 Petri Lehtinen <petri@digip.org>

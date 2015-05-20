@@ -18,6 +18,7 @@
 #define __STROKE_H__
 
 #include <stdbool.h>
+#include <unistd.h>
 
 #ifndef MAX_STROKE_POINTS
     #define MAX_STROKE_POINTS 512
@@ -32,7 +33,7 @@ typedef struct {
 } point;
 
 typedef struct {
-    int n;
+    size_t n;
     bool is_finished;
     point p[MAX_STROKE_POINTS];
 } stroke_t;

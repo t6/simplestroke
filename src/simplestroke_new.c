@@ -104,7 +104,7 @@ simplestroke_new(const int argc,
     if (error) {
         warnx("Failed recording gesture: %s", error);
         database_close(db);
-        free((void*)error);
+        free((void *)error);
         return EXIT_FAILURE;
     }
 

@@ -23,6 +23,11 @@
 #include <sys/param.h>
 #include <sysexits.h>
 #include <time.h>
+#if defined(HAVE_BSD_SYS_ENDIAN_H)
+    #include <bsd/sys/endian.h>
+#elif defined(HAVE_SYS_ENDIAN_H)
+    #include <sys/endian.h>
+#endif
 
 #include "db.h"
 #include <sqlite3.h>
@@ -202,8 +207,15 @@ database_add_gesture(Database *db,
                                        3, command, -1,
                                        SQLITE_STATIC))
         return sqlite3_errstr(sqlite3_extended_errcode(db->db));
+
+    size_t n = sizeof(point) * stroke->n;
+    char bytes[n];
+#if _BYTE_ORDER != _LITTLE_ENDIAN
+    reverse(bytes, n);
+#endif
+    memcpy(bytes, stroke->p, n);
     if (SQLITE_OK != sqlite3_bind_blob(db->insert_gesture_stmt,
-                                       4, stroke->p, sizeof(point)*stroke->n,
+                                       4, bytes, n,
                                        SQLITE_STATIC))
         return sqlite3_errstr(sqlite3_extended_errcode(db->db));
 
@@ -232,12 +244,15 @@ _database_load_gesture(sqlite3_stmt *stmt,
         *id = sqlite3_column_int(stmt, 0);
 
     if (stroke) {
-        point *points = (point *)sqlite3_column_blob(stmt, 1);
+        char *bytes = (char *)sqlite3_column_blob(stmt, 1);
         int n = sqlite3_column_bytes(stmt, 1);
-        memcpy(stroke->p, points, n);
+        assert(n >= 0);
+#if _BYTE_ORDER != _LITTLE_ENDIAN
+        reverse(bytes, n);
+#endif
+        memcpy(stroke->p, bytes, n);
         stroke->n = n / sizeof(point);
     }
-
 
     if (description)
         *description = strdup((char *)sqlite3_column_text(stmt, 2));

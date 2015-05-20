@@ -38,7 +38,7 @@ AC_CHECK_FUNC([strlcpy],
         [PKG_CHECK_MODULES([libbsd], [libbsd], [CFLAGS="$CFLAGS $libbsd_CFLAGS"
                                                 LIBS="$LIBS $libbsd_LIBS"])])
 
-AC_CHECK_HEADERS_ONCE([bsd/string.h])
+AC_CHECK_HEADERS_ONCE([bsd/string.h bsd/sys/endian.h sys/endian.h])
 AC_CHECK_LIB([m], [atan2])
 AC_CHECK_LIB([m], [hypot])
 

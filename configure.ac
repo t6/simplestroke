@@ -44,6 +44,7 @@ AC_CHECK_LIB([m], [hypot])
 
 AC_CONFIG_FILES([
 Makefile
+docs/Makefile
 src/Makefile
 external/Makefile
 ])

@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/param.h>
 #include <sysexits.h>
+#include <time.h>
 
 #include "db.h"
 #include <sqlite3.h>

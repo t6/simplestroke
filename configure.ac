@@ -1,5 +1,7 @@
-AC_INIT([simplestroke],
+AC_INIT([Simplestroke],
         [master],
+        [t@tobik.me],
+        [simplestroke],
         [https://github.com/t6/simplestroke],
         [t@tobik.me])
 AC_CONFIG_SRCDIR([configure.ac])
@@ -13,6 +15,14 @@ AC_C_CONST
 AC_TYPE_SIZE_T
 # AC_CONFIG_HEADERS([config.h])
 
+AC_CANONICAL_HOST
+case $host_os in
+linux*)
+        CFLAGS="$CFLAGS -D_GNU_SOURCE"
+;;
+esac
+AC_CHECK_FUNC([asprintf])
+
 AC_ARG_WITH([sysmouse-tracker], AS_HELP_STRING(
         [--with-sysmouse-tracker], [Use the sysmouse mouse tracker.
         By default the Xlib mouse tracker is used.]),
@@ -21,24 +31,14 @@ AC_ARG_WITH([sysmouse-tracker], AS_HELP_STRING(
 AS_IF([test "x$with_sysmouse_tracker" != xno],
             [AC_DEFINE([USE_SYSMOUSE_TRACKER], [], [using sysmouse tracker])],
             [AC_DEFINE([USE_XLIB_TRACKER], [], [using XLib mouse tracker])
-             PKG_CHECK_MODULES([x11], [x11])
-             PKG_CHECK_MODULES([xext], [xext])
-             PKG_CHECK_MODULES([xtst], [xtst])])
+             PKG_CHECK_MODULES([xtst], [x11 xext xtst])])
 
-AC_CHECK_HEADERS_ONCE([
-assert.h
-err.h
-errno.h
-fcntl.h
-getopt.h
-math.h
-stdbool.h
-stdio.h
-stdlib.h
-string.h
-sysexits.h
-sys/param.h
-unistd.h])
+AC_CHECK_FUNC([strlcpy],
+        [],
+        [PKG_CHECK_MODULES([libbsd], [libbsd], [CFLAGS="$CFLAGS $libbsd_CFLAGS"
+                                                LIBS="$LIBS $libbsd_LIBS"])])
+
+AC_CHECK_HEADERS_ONCE([bsd/string.h])
 AC_CHECK_LIB([m], [atan2])
 AC_CHECK_LIB([m], [hypot])
 

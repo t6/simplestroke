@@ -5,10 +5,10 @@ noinst_HEADERS=\
 
 bin_PROGRAMS=	simplestroke
 simplestroke_CFLAGS=\
-	$(x11_CFLAGS) $(xext_CFLAGS) $(xtst_CFLAGS) \
+	$(xtst_CFLAGS) \
 	-I$(top_builddir)/external/sqlite3
 simplestroke_LDADD=\
-	$(x11_LIBS) $(xext_LIBS) $(xtst_LIBS) \
+	$(xtst_LIBS) \
 	$(top_builddir)/external/libsqlite3_static.la
 simplestroke_SOURCES=\
 	db.c \

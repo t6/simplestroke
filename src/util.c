@@ -242,7 +242,7 @@ dump_string(FILE *file, const char *str, size_t len) {
         default: {
             /* codepoint is in BMP */
             if (codepoint < 0x10000) {
-                sprintf(seq, "\\u%04X", codepoint);
+                snprintf(seq, sizeof(seq), "\\u%04X", codepoint);
                 length = 6;
             }
             /* not in BMP -> construct a UTF-16 surrogate pair */
@@ -251,7 +251,7 @@ dump_string(FILE *file, const char *str, size_t len) {
                 codepoint -= 0x10000;
                 first = 0xD800 | ((codepoint & 0xffc00) >> 10);
                 last = 0xDC00 | (codepoint & 0x003ff);
-                sprintf(seq, "\\u%04X\\u%04X", first, last);
+                snprintf(seq, sizeof(seq), "\\u%04X\\u%04X", first, last);
                 length = 12;
             }
             text = seq;

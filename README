@@ -1,4 +1,4 @@
-SIMPLESTROKE(1)         FreeBSD General Commands Manual        SIMPLESTROKE(1)
+SIMPLESTROKE(1)             General Commands Manual            SIMPLESTROKE(1)
 
 NAME
      simplestroke - a gesture recognition application
@@ -9,7 +9,7 @@ SYNOPSIS
      simplestroke delete -i id [-h]
      simplestroke detect [-hn]
      simplestroke export -i id [-f file] [-c color] [-h]
-     simplestroke list [-j] [-h]
+     simplestroke list [-h]
 
 DESCRIPTION
      simplestroke is a gesture detection application.  It is backed by a
@@ -53,27 +53,17 @@ DESCRIPTION
                                  detected gesture, but print information about
                                  it instead, if any.
 
-     export      Displays information about the gesture with the id given by
-                 -i.  Output goes to stdout.  JSON export is provided for
-                 importing and working with the gesture in other programs.
-                 SVG export is for displaying the gesture.  Use display from
-                 the ImageMagick package to view the SVG. Alternatively, any
-                 modern browser will render SVGs.
-
-                 Outputs SVG by default.
+     export      Outputs the gesture with the id given by -i as an SVG.
+                 Output goes to stdout.  Use display from the ImageMagick
+                 package to view it.  Alternatively, any modern browser will
+                 render SVGs.
 
                  -i id           The id of the gesture to export.
-
-                 -j              Output gesture in JSON.
-
-                 -s              Output a SVG image.
 
                  -c color        The stroke color, can be in any format that
                                  is supported by SVG.
 
      list        Lists all gestures.  Output goes to stdout.
-
-                 -j              Outputs list in JSON.
 
 EXAMPLES
    STARTING DETECTION
@@ -115,4 +105,4 @@ AUTHORS
      simplestroke is inspired and based on easystroke 0.6.0 written by Thomas
      Jaeger <ThJaeger@gmail.com>.
 
-FreeBSD 11.0-CURRENT           February 18, 2015          FreeBSD 11.0-CURRENT
+OpenBSD 5.7                      June 25, 2015                     OpenBSD 5.7

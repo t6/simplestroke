@@ -43,8 +43,6 @@ static Subcommand subcommands[] = { { "delete", simplestroke_delete },
 static void open_man_page() {
   char *argv[] = { "man", "1", "simplestroke", NULL };
   execvp("man", argv);
-
-  // execvp returned => an error occurred...
   err(EX_OSERR, "execvp");
 }
 

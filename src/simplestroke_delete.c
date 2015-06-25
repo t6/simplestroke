@@ -20,6 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
+
 #include "db.h"
 
 static void simplestroke_delete_usage() {
@@ -36,7 +38,7 @@ int simplestroke_delete(int argc, char **argv) {
       case '?':
       case ':':
         simplestroke_delete_usage();
-        return EXIT_FAILURE;
+        return EX_USAGE;
       case 'i':
         id = (int)strtol(optarg, NULL, 10);
         if (errno == EINVAL || errno == ERANGE || id < 0) {
@@ -49,7 +51,7 @@ int simplestroke_delete(int argc, char **argv) {
 
   if (id == -1) {
     simplestroke_delete_usage();
-    return EXIT_FAILURE;
+    return EX_USAGE;
   }
 
   const char *error = NULL;

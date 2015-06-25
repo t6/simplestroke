@@ -20,34 +20,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 
 #include "db.h"
 #include "util.h"
 
 static void simplestroke_list_usage() {
-  fprintf(stderr, "usage: simplestroke list [-j]\n"
+  fprintf(stderr, "usage: simplestroke list\n"
                   "       simplestroke list -h\n");
 }
-
-static bool use_json = false;
 
 static void simplestroke_list_gesture_cb(__attribute__((unused))
                                          stroke_t *stroke,
                                          int id, char *description,
                                          char *command, __attribute__((unused))
                                                         const void *u) {
-  if (use_json) {
-    static bool first = true;
-    printf("%s{\"description\":", first ? "" : ",");
-    json_dump_string(description, strlen(description));
-
-    printf(",\"command\":");
-    json_dump_string(command, strlen(command));
-    printf(",\"id\":%i}", id);
-
-    first = false;
-  } else
-    printf("%-5i %-36s %-36s\n", id, description, command);
+  printf("%-5i %-36s %-36s\n", id, description, command);
 
   free(description);
   free(command);
@@ -55,16 +43,13 @@ static void simplestroke_list_gesture_cb(__attribute__((unused))
 
 int simplestroke_list(int argc, char **argv) {
   int ch;
-  while ((ch = getopt(argc, argv, "hj")) != -1) {
+  while ((ch = getopt(argc, argv, "h")) != -1) {
     switch (ch) {
-      case 'j':
-        use_json = true;
-        break;
       case 'h':
       case '?':
       case ':':
         simplestroke_list_usage();
-        return EXIT_FAILURE;
+        return EX_USAGE;
       default:
         break;
     }
@@ -77,23 +62,13 @@ int simplestroke_list(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  if (use_json)
-    printf("[");
-  else
-    printf("%-5s %-36s %-36s\n", "ID", "DESCRIPTION", "COMMAND");
-
+  printf("%-5s %-36s %-36s\n", "ID", "DESCRIPTION", "COMMAND");
   error = database_load_gestures(db, simplestroke_list_gesture_cb, NULL);
 
-  if (use_json)
-    printf("]\n");
-
-  int retval = EXIT_SUCCESS;
   if (error) {
     warnx("Problem loading gestures: %s", error);
-    retval = EXIT_FAILURE;
+    database_close(db);
+    return EXIT_FAILURE;
   }
-
-  database_close(db);
-
-  return retval;
+  return EXIT_SUCCESS;
 }

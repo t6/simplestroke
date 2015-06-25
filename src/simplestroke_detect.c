@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 #ifdef HAVE_BSD_STRING_H
 #include <bsd/string.h>
 #endif
@@ -64,7 +65,7 @@ int simplestroke_detect(const int argc, char **argv) {
       case '?':
       case ':':
         simplestroke_detect_usage();
-        return EXIT_FAILURE;
+        return EX_USAGE;
       case 'n':
         no_exec = true;
         break;

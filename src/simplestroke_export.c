@@ -20,32 +20,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 
 #include "db.h"
 #include "util.h"
 
-static int simplestroke_export_json(stroke_t *stroke, int id, char *description,
-                                    char *command) {
-  printf("{\"description\":");
-  json_dump_string(description, strlen(description));
-
-  printf(",\"command\":");
-  json_dump_string(command, strlen(command));
-
-  printf(",\"id\":%i,\"points\":[", id);
-  for (int i = 0; i < stroke->n; i++) {
-    printf("[%f,%f]%s", stroke->p[i].x, stroke->p[i].y,
-           i == stroke->n - 1 ? "" : ",");
-  }
-  printf("]}\n");
-
-  return EXIT_SUCCESS;
-}
-
 static int simplestroke_export_svg(stroke_t *stroke, int id, char *description,
                                    char *command, char *color) {
-  // TODO: need to escape ]]> in description and command (end of CDATA)
-  //       by expanding ]]> to ]]]]><![CDATA[>
+  // XXX: strictly speakin we would need to escape ]]> in description
+  //      and command (end of CDATA) by expanding ]]> to ]]]]><![CDATA[>
   const int width = 250;
   const int height = 250;
   printf("<svg xmlns='http://www.w3.org/2000/svg'\n"
@@ -81,21 +64,14 @@ static void simplestroke_export_usage() {
 int simplestroke_export(int argc, char **argv) {
   int ch;
   int id = -1;
-  bool svg_export = true;
   char *color = NULL;
-  while ((ch = getopt(argc, argv, "hc:i:sj")) != -1) {
+  while ((ch = getopt(argc, argv, "hc:i:")) != -1) {
     switch (ch) {
-      case 's':
-        svg_export = true;
-        break;
-      case 'j':
-        svg_export = false;
-        break;
       case 'h':
       case '?':
       case ':':
         simplestroke_export_usage();
-        return EXIT_FAILURE;
+        return EX_USAGE;
       case 'i':
         id = (int)strtol(optarg, NULL, 10);
         if (errno == EINVAL || errno == ERANGE || id < 0) {
@@ -113,7 +89,7 @@ int simplestroke_export(int argc, char **argv) {
 
   if (id == -1) {
     simplestroke_export_usage();
-    return EXIT_FAILURE;
+    return EX_USAGE;
   }
 
   const char *error = NULL;
@@ -132,11 +108,7 @@ int simplestroke_export(int argc, char **argv) {
   if (error)
     warnx("Problem loading gesture with id %i: %s", id, error);
   else {
-    if (svg_export)
-      retval =
-          simplestroke_export_svg(&stroke, id, description, command, color);
-    else
-      retval = simplestroke_export_json(&stroke, id, description, command);
+    retval = simplestroke_export_svg(&stroke, id, description, command, color);
 
     free(command);
     free(description);

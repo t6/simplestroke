@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sysexits.h>
 #include <unistd.h>
 
 #include "db.h"
@@ -32,11 +33,6 @@ static void simplestroke_new_usage() {
 }
 
 int simplestroke_new(const int argc, char **argv) {
-  if (argc == 1) {
-    simplestroke_new_usage();
-    return EXIT_FAILURE;
-  }
-
   char *description = NULL;
   char *command = NULL;
   // wait for 2 seconds before recording by default
@@ -64,7 +60,7 @@ int simplestroke_new(const int argc, char **argv) {
       case '?':
       case ':':
         simplestroke_new_usage();
-        return EXIT_FAILURE;
+        return EX_USAGE;
       default:
         break;
     }
@@ -72,7 +68,7 @@ int simplestroke_new(const int argc, char **argv) {
 
   if (command == NULL || description == NULL) {
     simplestroke_new_usage();
-    return EXIT_FAILURE;
+    return EX_USAGE;
   }
 
   const char *error = NULL;

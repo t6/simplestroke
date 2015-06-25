@@ -5,6 +5,7 @@ noinst_HEADERS=\
 
 bin_PROGRAMS=	simplestroke
 simplestroke_CFLAGS=\
+	-std=c99 -Wall -Wextra \
 	$(xtst_CFLAGS) \
 	-I$(top_builddir)/external/sqlite3
 simplestroke_LDADD=\

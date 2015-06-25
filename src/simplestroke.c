@@ -30,41 +30,37 @@ extern int simplestroke_list(const int argc, const char **argv);
 extern int simplestroke_new(const int argc, const char **argv);
 
 typedef struct {
-    char *name;
-    int (*handler)(const int, const char **);
+  char *name;
+  int (*handler)(const int, const char **);
 } Subcommand;
 
-static Subcommand subcommands[] = {
-    { "delete", simplestroke_delete },
-    { "detect", simplestroke_detect },
-    { "export", simplestroke_export },
-    { "list", simplestroke_list },
-    { "new", simplestroke_new },
-};
+static Subcommand subcommands[] = { { "delete", simplestroke_delete },
+                                    { "detect", simplestroke_detect },
+                                    { "export", simplestroke_export },
+                                    { "list", simplestroke_list },
+                                    { "new", simplestroke_new }, };
 
-static void
-open_man_page() {
-    char *argv[] = {"man", "1", "simplestroke", NULL};
-    execvp("man", argv);
+static void open_man_page() {
+  char *argv[] = { "man", "1", "simplestroke", NULL };
+  execvp("man", argv);
 
-    // execvp returned => an error occurred...
-    err(EX_OSERR, "execvp");
+  // execvp returned => an error occurred...
+  err(EX_OSERR, "execvp");
 }
 
-int
-main(int argc, char **argv) {
-    if (argc > 1) {
-        for (size_t i = 0; i < nitems(subcommands); i++) {
-            const Subcommand subcmd = subcommands[i];
-            if (!strcmp(argv[1], subcmd.name)) {
-                if (argc < 0)
-                    return EXIT_FAILURE;
-                return subcmd.handler(argc - 1, (const char **)argv + 1);
-            }
-        }
+int main(int argc, char **argv) {
+  if (argc > 1) {
+    for (size_t i = 0; i < nitems(subcommands); i++) {
+      const Subcommand subcmd = subcommands[i];
+      if (!strcmp(argv[1], subcmd.name)) {
+        if (argc < 0)
+          return EXIT_FAILURE;
+        return subcmd.handler(argc - 1, (const char **)argv + 1);
+      }
     }
+  }
 
-    open_man_page();
+  open_man_page();
 
-    return EXIT_FAILURE;
+  return EXIT_FAILURE;
 }

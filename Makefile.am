@@ -10,6 +10,6 @@ readme:
 	@mandoc -Tascii docs/simplestroke.1 | col -bx > README
 
 fmt:
-	@find src -name '*.c' -or -name '*.h' | xargs astyle --options=astylerc
+	find src -name '*.c' -or -name '*.h' | xargs clang-format -i -style=Mozilla
 
 .PHONY: readme fmt

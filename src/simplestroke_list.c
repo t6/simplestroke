@@ -24,81 +24,76 @@
 #include "db.h"
 #include "util.h"
 
-static void
-simplestroke_list_usage() {
-    fprintf(stderr,
-            "usage: simplestroke list [-j]\n"
-            "       simplestroke list -h\n");
+static void simplestroke_list_usage() {
+  fprintf(stderr, "usage: simplestroke list [-j]\n"
+                  "       simplestroke list -h\n");
 }
-
 
 static bool use_json = false;
 
-static void
-simplestroke_list_gesture_cb(__attribute__((unused)) stroke_t *stroke,
-                             int id,
-                             char *description,
-                             char *command,
-                             __attribute__((unused)) const void *u) {
-    if (use_json) {
-        static bool first = true;
-        printf("%s{\"description\":", first ? "" : ",");
-        json_dump_string(description, strlen(description));
+static void simplestroke_list_gesture_cb(__attribute__((unused))
+                                         stroke_t *stroke,
+                                         int id, char *description,
+                                         char *command, __attribute__((unused))
+                                                        const void *u) {
+  if (use_json) {
+    static bool first = true;
+    printf("%s{\"description\":", first ? "" : ",");
+    json_dump_string(description, strlen(description));
 
-        printf(",\"command\":");
-        json_dump_string(command, strlen(command));
-        printf(",\"id\":%i}", id);
+    printf(",\"command\":");
+    json_dump_string(command, strlen(command));
+    printf(",\"id\":%i}", id);
 
-        first = false;
-    } else
-        printf("%-5i %-36s %-36s\n", id, description, command);
+    first = false;
+  } else
+    printf("%-5i %-36s %-36s\n", id, description, command);
 
-    free(description);
-    free(command);
+  free(description);
+  free(command);
 }
 
-int
-simplestroke_list(int argc, char **argv) {
-    int ch;
-    while ((ch = getopt(argc, argv, "hj")) != -1) {
-        switch (ch) {
-        case 'j':
-            use_json = true;
-            break;
-        case 'h':
-        case '?':
-        case ':':
-            simplestroke_list_usage();
-            return EXIT_FAILURE;
-        default:
-            break;
-        }
-    }
-
-    const char *error = NULL;
-    Database *db = database_open(&error);
-    if (error) {
-        warnx("%s", error);
+int simplestroke_list(int argc, char **argv) {
+  int ch;
+  while ((ch = getopt(argc, argv, "hj")) != -1) {
+    switch (ch) {
+      case 'j':
+        use_json = true;
+        break;
+      case 'h':
+      case '?':
+      case ':':
+        simplestroke_list_usage();
         return EXIT_FAILURE;
+      default:
+        break;
     }
+  }
 
-    if (use_json)
-        printf("[");
-    else
-        printf("%-5s %-36s %-36s\n", "ID", "DESCRIPTION", "COMMAND");
+  const char *error = NULL;
+  Database *db = database_open(&error);
+  if (error) {
+    warnx("%s", error);
+    return EXIT_FAILURE;
+  }
 
-    error = database_load_gestures(db, simplestroke_list_gesture_cb, NULL);
+  if (use_json)
+    printf("[");
+  else
+    printf("%-5s %-36s %-36s\n", "ID", "DESCRIPTION", "COMMAND");
 
-    if (use_json)
-        printf("]\n");
+  error = database_load_gestures(db, simplestroke_list_gesture_cb, NULL);
 
-    int retval = EXIT_SUCCESS;
-    if (error) {
-        warnx("Problem loading gestures: %s", error);
-        retval = EXIT_FAILURE;
-    }
+  if (use_json)
+    printf("]\n");
 
-    database_close(db);
+  int retval = EXIT_SUCCESS;
+  if (error) {
+    warnx("Problem loading gestures: %s", error);
+    retval = EXIT_FAILURE;
+  }
 
-    return retval;
+  database_close(db);
+
+  return retval;
 }

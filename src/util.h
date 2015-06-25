@@ -21,7 +21,7 @@
 #include <sys/param.h>
 
 #ifndef nitems
-    #define nitems(x) (sizeof((x)) / sizeof((x)[0]))
+#define nitems(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
 /* free */ char *config_dir();

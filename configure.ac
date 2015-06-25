@@ -5,7 +5,7 @@ AC_INIT([Simplestroke],
         [https://github.com/t6/simplestroke],
         [t@tobik.me])
 AC_CONFIG_SRCDIR([configure.ac])
-AM_INIT_AUTOMAKE([1.11 foreign -Wno-portability no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.15 foreign -Wall no-dist-gzip dist-xz])
 AM_SILENT_RULES([yes])
 
 AC_PROG_CC_C99

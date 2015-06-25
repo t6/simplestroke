@@ -21,21 +21,21 @@
 #include <unistd.h>
 
 #ifndef MAX_STROKE_POINTS
-    #define MAX_STROKE_POINTS 512
+#define MAX_STROKE_POINTS 512
 #endif
 
 typedef struct {
-    double x;
-    double y;
-    double t;
-    double dt;
-    double alpha;
+  double x;
+  double y;
+  double t;
+  double dt;
+  double alpha;
 } point;
 
 typedef struct {
-    size_t n;
-    bool is_finished;
-    point p[MAX_STROKE_POINTS];
+  int n;
+  bool is_finished;
+  point p[MAX_STROKE_POINTS];
 } stroke_t;
 
 void stroke_add_point(stroke_t *stroke, double x, double y);

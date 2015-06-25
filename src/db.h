@@ -33,6 +33,7 @@ const char *database_delete_gesture_with_id(Database *db, int id);
 const char *database_load_gestures(Database *db, LoadGesturesCallback cb,
                                    const void *user_data);
 const char *database_load_gesture_with_id(Database *db, int id,
-        stroke_t *stroke, char **description, char **command);
+                                          stroke_t *stroke, char **description,
+                                          char **command);
 
 #endif

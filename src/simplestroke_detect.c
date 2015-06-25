@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef HAVE_BSD_STRING_H
-    #include <bsd/string.h>
+#include <bsd/string.h>
 #endif
 
 #include "db.h"
@@ -28,91 +28,83 @@
 #include "util.h"
 
 typedef struct {
-    stroke_t stroke;
-    char command[2048];
-    char description[2048];
-    double score;
+  stroke_t stroke;
+  char command[2048];
+  char description[2048];
+  double score;
 } GestureSelectionState;
 
-static void
-load_gestures_cb(stroke_t *stroke,
-                 __attribute__((unused)) int id,
-                 char *description,
-                 char *command,
-                 const void *user_data) {
-    GestureSelectionState *state = (GestureSelectionState *)user_data;
-    double score = stroke_compare(stroke, &state->stroke, NULL, NULL);
-    if (score < stroke_infinity) { // state->stroke has similarity with stroke
-        if (score < state->score) { // check if there is a better candidate
-            state->score = score;
-            strlcpy(state->command, command, sizeof(state->command));
-            strlcpy(state->description, description, sizeof(state->description));
-            free(command);
-            free(description);
-        }
+static void load_gestures_cb(stroke_t *stroke, __attribute__((unused)) int id,
+                             char *description, char *command,
+                             const void *user_data) {
+  GestureSelectionState *state = (GestureSelectionState *)user_data;
+  double score = stroke_compare(stroke, &state->stroke, NULL, NULL);
+  if (score < stroke_infinity) { // state->stroke has similarity with stroke
+    if (score < state->score) {  // check if there is a better candidate
+      state->score = score;
+      strlcpy(state->command, command, sizeof(state->command));
+      strlcpy(state->description, description, sizeof(state->description));
+      free(command);
+      free(description);
     }
+  }
 }
 
-static void
-simplestroke_detect_usage() {
-    fprintf(stderr,
-            "usage: simplestroke detect [-n]\n"
-            "       simplestroke detect -h\n");
+static void simplestroke_detect_usage() {
+  fprintf(stderr, "usage: simplestroke detect [-n]\n"
+                  "       simplestroke detect -h\n");
 }
 
-int
-simplestroke_detect(const int argc,
-                    char **argv) {
-    bool no_exec = false;
-    int ch;
-    while ((ch = getopt(argc, argv, "hn")) != -1) {
-        switch (ch) {
-        case 'h':
-        case '?':
-        case ':':
-            simplestroke_detect_usage();
-            return EXIT_FAILURE;
-        case 'n':
-            no_exec = true;
-            break;
-        default:
-            break;
-        }
-    }
-
-    const char *error = NULL;
-    Database *db = database_open(&error);
-    if (error) {
-        warnx("%s", error);
+int simplestroke_detect(const int argc, char **argv) {
+  bool no_exec = false;
+  int ch;
+  while ((ch = getopt(argc, argv, "hn")) != -1) {
+    switch (ch) {
+      case 'h':
+      case '?':
+      case ':':
+        simplestroke_detect_usage();
         return EXIT_FAILURE;
+      case 'n':
+        no_exec = true;
+        break;
+      default:
+        break;
     }
+  }
 
-    GestureSelectionState state = { .stroke = {},
-                                    .command = {},
-                                    .description = {},
-                                    .score = stroke_infinity
-                                  };
-    error = record_stroke(&state.stroke);
-    if (error) {
-        warnx("Failed recording gesture: %s", error);
-        free((void *)error);
-        return EXIT_FAILURE;
-    }
+  const char *error = NULL;
+  Database *db = database_open(&error);
+  if (error) {
+    warnx("%s", error);
+    return EXIT_FAILURE;
+  }
 
-    error = database_load_gestures(db, load_gestures_cb, &state);
-    if (error) {
-        warnx("%s", error);
-        return EXIT_FAILURE;
-    }
+  GestureSelectionState state = { .command = { 0 },
+                                  .description = { 0 },
+                                  .score = stroke_infinity };
+  error = record_stroke(&state.stroke);
+  if (error) {
+    warnx("Failed recording gesture: %s", error);
+    free((void *)error);
+    return EXIT_FAILURE;
+  }
 
-    database_close(db);
+  error = database_load_gestures(db, load_gestures_cb, &state);
+  if (error) {
+    warnx("%s", error);
+    return EXIT_FAILURE;
+  }
 
-    if (state.score < stroke_infinity) { // We found a candidate
-        if (no_exec)
-            printf("Command: %s\nDescription: %s\n", state.command, state.description);
-        else
-            exec_commandline(state.command);
-        return EXIT_SUCCESS;
-    } else
-        return EXIT_FAILURE;
+  database_close(db);
+
+  if (state.score < stroke_infinity) { // We found a candidate
+    if (no_exec)
+      printf("Command: %s\nDescription: %s\n", state.command,
+             state.description);
+    else
+      exec_commandline(state.command);
+    return EXIT_SUCCESS;
+  } else
+    return EXIT_FAILURE;
 }

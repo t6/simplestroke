@@ -36,64 +36,61 @@
 /* Returns true if any mouse button was released, which
  * is the signal to stop polling /dev/sysmouse.
  */
-static bool
-button_released(mousestatus_t *status) {
-#define RELEASED(n)                                     \
-    ((status->obutton & MOUSE_BUTTON##n##DOWN)          \
-     && !(status->button & MOUSE_BUTTON##n##DOWN))
+static bool button_released(mousestatus_t *status) {
+#define RELEASED(n)                                                            \
+  ((status->obutton &MOUSE_BUTTON##n##DOWN) &&                                 \
+   !(status->button & MOUSE_BUTTON##n##DOWN))
 
-    return RELEASED(1) || RELEASED(2) || RELEASED(3) || RELEASED(4) ||
-           RELEASED(5) || RELEASED(6) || RELEASED(7) || RELEASED(8) ||
-           RELEASED(9);
+  return RELEASED(1) || RELEASED(2) || RELEASED(3) || RELEASED(4) ||
+         RELEASED(5) || RELEASED(6) || RELEASED(7) || RELEASED(8) ||
+         RELEASED(9);
 
 #undef RELEASED
 }
 
-char *
-record_stroke(/* out */ stroke_t *stroke) {
-    mousestatus_t mouse_status;
-    int x = 0;
-    int y = 0;
-    int status = 0;
+char *record_stroke(/* out */ stroke_t *stroke) {
+  mousestatus_t mouse_status;
+  int x = 0;
+  int y = 0;
+  int status = 0;
 
-    int mouse = open("/dev/sysmouse", O_RDONLY);
-    if (mouse == -1) {
-        char *error;
-        asprintf(&error, "Error opening /dev/sysmouse: %s", strerror(errno));
-        return error;
+  int mouse = open("/dev/sysmouse", O_RDONLY);
+  if (mouse == -1) {
+    char *error;
+    asprintf(&error, "Error opening /dev/sysmouse: %s", strerror(errno));
+    return error;
+  }
+
+  while (true) {
+    usleep(50);
+
+    if ((status = ioctl(mouse, MOUSE_GETSTATUS, &mouse_status)) == -1) {
+      close(mouse);
+      return strerror(status);
     }
 
-    while (true) {
-        usleep(50);
-
-        if ((status = ioctl(mouse, MOUSE_GETSTATUS, &mouse_status)) == -1) {
-            close(mouse);
-            return strerror(status);
-        }
-
-        if (button_released(&mouse_status)) {
-            stroke_finish(stroke);
-            break;
-        }
-
-        if (mouse_status.flags & MOUSE_POSCHANGED
-                && (mouse_status.dx != 0 || mouse_status.dy != 0)) {
-            x += mouse_status.dx;
-            y += mouse_status.dy;
-
-            if (stroke->n < MAX_STROKE_POINTS &&
-                    !stroke->is_finished)
-                stroke_add_point(stroke, x, y);
-            else {
-                stroke_finish(stroke);
-                break;
-            }
-        }
+    if (button_released(&mouse_status)) {
+      stroke_finish(stroke);
+      break;
     }
 
-    close(mouse);
+    if (mouse_status.flags & MOUSE_POSCHANGED &&
+        (mouse_status.dx != 0 || mouse_status.dy != 0)) {
+      x += mouse_status.dx;
+      y += mouse_status.dy;
 
-    return NULL;
+      if (stroke->n < MAX_STROKE_POINTS && !stroke->is_finished)
+        stroke_add_point(stroke, x, y);
+      else {
+        stroke_finish(stroke);
+        break;
+      }
+    }
+  }
+
+  close(mouse);
+
+  return NULL;
 }
 
 #endif

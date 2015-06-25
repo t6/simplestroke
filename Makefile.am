@@ -9,7 +9,9 @@ readme:
 	@echo Regenerating README from man page
 	@mandoc -Tascii docs/simplestroke.1 | col -bx > README
 
+CLANG_FORMAT=clang-format
+
 fmt:
-	find src -name '*.c' -or -name '*.h' | xargs clang-format -i -style=Mozilla
+	find src -name '*.c' -or -name '*.h' | xargs ${CLANG_FORMAT} -i -style=Mozilla
 
 .PHONY: readme fmt

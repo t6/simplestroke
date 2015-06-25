@@ -34,11 +34,13 @@ typedef struct {
   int (*handler)(const int, const char **);
 } Subcommand;
 
-static Subcommand subcommands[] = { { "delete", simplestroke_delete },
-                                    { "detect", simplestroke_detect },
-                                    { "export", simplestroke_export },
-                                    { "list", simplestroke_list },
-                                    { "new", simplestroke_new }, };
+static Subcommand subcommands[] = {
+  { "delete", simplestroke_delete },
+  { "detect", simplestroke_detect },
+  { "export", simplestroke_export },
+  { "list", simplestroke_list },
+  { "new", simplestroke_new },
+};
 
 static void open_man_page() {
   char *argv[] = { "man", "1", "simplestroke", NULL };

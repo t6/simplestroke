@@ -129,7 +129,7 @@ char *record_stroke(/* out */ stroke_t *stroke) {
   XSync(state.control, True);
 
   if (0 == XRecordEnableContextAsync(state.data, state.context,
-                                     &record_callback, (XPointer) & state)) {
+                                     &record_callback, (XPointer)&state)) {
     record_cleanup(&state);
     return strdup(
         "could not enable data transfer between recording client and X server");

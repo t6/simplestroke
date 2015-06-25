@@ -35,7 +35,7 @@ typedef struct {
   double score;
 } GestureSelectionState;
 
-static void load_gestures_cb(stroke_t *stroke, __attribute__((unused)) int id,
+static void load_gestures_cb(stroke_t *stroke, __unused int id,
                              char *description, char *command,
                              const void *user_data) {
   GestureSelectionState *state = (GestureSelectionState *)user_data;

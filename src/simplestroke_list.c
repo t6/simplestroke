@@ -26,35 +26,23 @@
 #include "util.h"
 
 static void simplestroke_list_usage() {
-  fprintf(stderr, "usage: simplestroke list\n"
-                  "       simplestroke list -h\n");
+  fprintf(stderr, "usage: simplestroke list\n");
 }
 
-static void simplestroke_list_gesture_cb(__attribute__((unused))
-                                         stroke_t *stroke,
-                                         int id, char *description,
-                                         char *command, __attribute__((unused))
-                                                        const void *u) {
+static void simplestroke_list_gesture_cb(__unused stroke_t *stroke, int id,
+                                         char *description, char *command,
+                                         __unused const void *u) {
   printf("%-5i %-36s %-36s\n", id, description, command);
 
   free(description);
   free(command);
 }
 
-int simplestroke_list(int argc, char **argv) {
-  int ch;
-  while ((ch = getopt(argc, argv, "h")) != -1) {
-    switch (ch) {
-      case 'h':
-      case '?':
-      case ':':
-        simplestroke_list_usage();
-        return EX_USAGE;
-      default:
-        break;
-    }
+int simplestroke_list(int argc, __unused char **argv) {
+  if (argc > 1) {
+    simplestroke_list_usage();
+    return EX_USAGE;
   }
-
   const char *error = NULL;
   Database *db = database_open(&error);
   if (error) {

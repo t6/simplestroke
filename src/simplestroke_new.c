@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 #include "db.h"
-#include "recorder.h"
+#include "tracker.h"
 
 static void simplestroke_new_usage() {
   fprintf(stderr,

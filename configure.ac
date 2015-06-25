@@ -23,15 +23,7 @@ linux*)
 esac
 AC_CHECK_FUNC([asprintf])
 
-AC_ARG_WITH([sysmouse-tracker], AS_HELP_STRING(
-        [--with-sysmouse-tracker], [Use the sysmouse mouse tracker.
-        By default the Xlib mouse tracker is used.]),
-        [],
-        [with_sysmouse_tracker=no])
-AS_IF([test "x$with_sysmouse_tracker" != xno],
-            [AC_DEFINE([USE_SYSMOUSE_TRACKER], [], [using sysmouse tracker])],
-            [AC_DEFINE([USE_XLIB_TRACKER], [], [using XLib mouse tracker])
-             PKG_CHECK_MODULES([xtst], [x11 xext xtst])])
+PKG_CHECK_MODULES([xtst], [x11 xext xtst])
 
 AC_CHECK_FUNC([strlcpy],
         [],

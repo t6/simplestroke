@@ -13,8 +13,6 @@ simplestroke_LDADD=\
 	$(top_builddir)/external/libsqlite3_static.la
 simplestroke_SOURCES=\
 	db.c \
-	recorder-sysmouse.c \
-	recorder-x11.c \
 	simplestroke.c \
 	simplestroke_delete.c \
 	simplestroke_detect.c \
@@ -22,4 +20,5 @@ simplestroke_SOURCES=\
 	simplestroke_list.c \
 	simplestroke_new.c\
 	stroke.c \
+	tracker.c \
 	util.c

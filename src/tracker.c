@@ -14,8 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifdef USE_XLIB_TRACKER
-
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/record.h>
@@ -23,7 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "recorder.h"
+#include "tracker.h"
 
 typedef struct {
   Display *control;
@@ -146,4 +144,3 @@ char *record_stroke(/* out */ stroke_t *stroke) {
 
   return NULL;
 }
-#endif

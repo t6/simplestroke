@@ -69,7 +69,7 @@ static const char *delete_gesture_with_id_sql =
    error is set to an appropriate error message. */
 Database *database_open(/* out */ const char **error) {
   assert(error);
-  Database *db = malloc(sizeof(Database));
+  Database *db = calloc(1, sizeof(Database));
   if (db == NULL)
     err(EX_OSERR, "malloc");
 

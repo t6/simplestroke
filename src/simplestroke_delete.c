@@ -17,10 +17,15 @@
 #include <err.h>
 #include <errno.h>
 #include <getopt.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+
+#ifdef HAVE_BSD_STDLIB_H
+#include <bsd/stdlib.h>
+#endif
 
 #include "db.h"
 
@@ -32,6 +37,7 @@ static void simplestroke_delete_usage() {
 int simplestroke_delete(int argc, char **argv) {
   int ch;
   int id = -1;
+  const char *error = NULL;
   while ((ch = getopt(argc, argv, "hi:")) != -1) {
     switch (ch) {
       case 'h':
@@ -40,9 +46,9 @@ int simplestroke_delete(int argc, char **argv) {
         simplestroke_delete_usage();
         return EX_USAGE;
       case 'i':
-        id = (int)strtol(optarg, NULL, 10);
-        if (errno == EINVAL || errno == ERANGE || id < 0) {
-          warnx("-i must be a positive integer, was: %s", optarg);
+        id = strtonum(optarg, 0, INT_MAX, &error);
+        if (error) {
+          warnx("-i %s", error);
           return EXIT_FAILURE;
         }
         break;
@@ -54,7 +60,7 @@ int simplestroke_delete(int argc, char **argv) {
     return EX_USAGE;
   }
 
-  const char *error = NULL;
+  error = NULL;
   Database *db = database_open(&error);
   if (error) {
     warnx("%s", error);

@@ -5,7 +5,7 @@ AC_INIT([Simplestroke],
         [https://github.com/t6/simplestroke],
         [t@tobik.me])
 AC_CONFIG_SRCDIR([configure.ac])
-AM_INIT_AUTOMAKE([1.15 foreign -Wall no-dist-gzip dist-xz])
+AM_INIT_AUTOMAKE([1.11 foreign -Wall no-dist-gzip dist-xz])
 AM_SILENT_RULES([yes])
 
 AC_PROG_CC_C99
@@ -30,7 +30,7 @@ AC_CHECK_FUNC([strlcpy],
         [PKG_CHECK_MODULES([libbsd], [libbsd], [CFLAGS="$CFLAGS $libbsd_CFLAGS"
                                                 LIBS="$LIBS $libbsd_LIBS"])])
 
-AC_CHECK_HEADERS_ONCE([bsd/string.h bsd/sys/endian.h sys/endian.h])
+AC_CHECK_HEADERS_ONCE([bsd/string.h bsd/stdlib.h bsd/sys/endian.h sys/endian.h])
 AC_CHECK_LIB([m], [atan2])
 AC_CHECK_LIB([m], [hypot])
 

@@ -23,6 +23,10 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+#ifdef HAVE_BSD_STDLIB_H
+#include <bsd/stdlib.h>
+#endif
+
 #include "db.h"
 #include "tracker.h"
 
@@ -35,19 +39,18 @@ static void simplestroke_new_usage() {
 int simplestroke_new(const int argc, char **argv) {
   char *description = NULL;
   char *command = NULL;
+  const char *error = NULL;
   // wait for 2 seconds before recording by default
   const long default_wait = 2;
-  long wait = default_wait;
+  int wait = default_wait;
   int ch;
   while ((ch = getopt(argc, argv, "hw:d:c:")) != -1) {
     switch (ch) {
       case 'w':
-        wait = strtol(optarg, NULL, 10);
-        if (errno == EINVAL || errno == ERANGE || wait < 0) {
-          warnx("-w expects a positive integer, falling back to default of %li "
-                "seconds!\n",
-                default_wait);
-          wait = default_wait;
+        wait = strtonum(optarg, 0, 3600 /* s = 1 hour */, &error);
+        if (error) {
+          warnx("-w %s", error);
+          return EXIT_FAILURE;
         }
         break;
       case 'd':
@@ -71,7 +74,7 @@ int simplestroke_new(const int argc, char **argv) {
     return EX_USAGE;
   }
 
-  const char *error = NULL;
+  error = NULL;
   Database *db = database_open(&error);
   if (error) {
     warnx("%s", error);
@@ -99,7 +102,6 @@ int simplestroke_new(const int argc, char **argv) {
   if (error) {
     warnx("Failed recording gesture: %s", error);
     database_close(db);
-    free((void *)error);
     return EXIT_FAILURE;
   }
 

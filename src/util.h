@@ -24,6 +24,10 @@
 #define nitems(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
+#ifndef __unused
+#define __unused __attribute__((__unused__))
+#endif
+
 /* free */ char *config_dir();
 bool mkdirs(char *path);
 void exec_commandline(const char *commandline);

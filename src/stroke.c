@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 #include <sys/param.h>
 
 #include "stroke.h"
@@ -154,6 +155,9 @@ double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x,
   double dist[M * N];
   int prev_x[M * N];
   int prev_y[M * N];
+
+  memset(prev_x, 0, M * N);
+  memset(prev_y, 0, M * N);
 
   for (int i = 0; i < m; i++) {
     for (int j = 0; j < n; j++)

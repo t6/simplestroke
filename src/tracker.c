@@ -88,7 +88,7 @@ void record_callback(XPointer closure, XRecordInterceptData *record_data) {
   XRecordFreeData(record_data);
 }
 
-char *record_stroke(/* out */ stroke_t *stroke) {
+const char *record_stroke(/* out */ stroke_t *stroke) {
   assert(stroke);
 
   RecorderState state = { .control = XOpenDisplay(NULL),
@@ -103,16 +103,16 @@ char *record_stroke(/* out */ stroke_t *stroke) {
   // See http://www.x.org/docs/Xext/recordlib.pdf
   if (!state.control) {
     record_cleanup(&state);
-    return strdup("Could not open control display");
+    return "Could not open control display";
   }
   if (!state.data) {
     record_cleanup(&state);
-    return strdup("Could not open data display");
+    return "Could not open data display";
   }
 
   if (!state.range) {
     record_cleanup(&state);
-    return strdup("Could not create record range");
+    return "Could not create record range";
   }
 
   state.range->device_events.first = KeyPress;
@@ -123,7 +123,7 @@ char *record_stroke(/* out */ stroke_t *stroke) {
       XRecordCreateContext(state.control, 0, &spec, 1, &state.range, 1);
   if (!state.context) {
     record_cleanup(&state);
-    return strdup("Could not create record context");
+    return "Could not create record context";
   }
 
   XSync(state.control, True);
@@ -131,8 +131,8 @@ char *record_stroke(/* out */ stroke_t *stroke) {
   if (0 == XRecordEnableContextAsync(state.data, state.context,
                                      &record_callback, (XPointer)&state)) {
     record_cleanup(&state);
-    return strdup(
-        "could not enable data transfer between recording client and X server");
+    return "could not enable data transfer between recording client and X "
+           "server";
   }
 
   while (state.track) {

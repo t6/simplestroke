@@ -57,7 +57,7 @@ bool mkdirs(char *dir) {
   if (stat(dir, &s) == 0)
     return S_ISDIR(s.st_mode);
   else if (errno != ENOENT) {
-    perror("stat");
+    warn("stat");
     return false;
   }
 
@@ -66,16 +66,13 @@ bool mkdirs(char *dir) {
   pid_t child = fork();
   if (child == 0)
     execvp("mkdir", argv);
-  else if (child == -1) {
-    perror("fork");
-    return false;
-  }
+  else if (child == -1)
+    err(EXIT_FAILURE, "fork");
 
   int status;
-  if (waitpid(child, &status, 0) == -1) {
-    perror("waitpid");
-    return false;
-  }
+  if (waitpid(child, &status, 0) == -1)
+    err(EXIT_FAILURE, "waitpid");
+
   if (status != 0)
     return false;
 

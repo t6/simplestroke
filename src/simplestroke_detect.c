@@ -30,8 +30,8 @@
 
 typedef struct {
   stroke_t stroke;
-  char command[2048];
-  char description[2048];
+  char *command;
+  char *description;
   double score;
 } GestureSelectionState;
 
@@ -43,12 +43,16 @@ static void load_gestures_cb(stroke_t *stroke, __unused int id,
   if (score < stroke_infinity) { // state->stroke has similarity with stroke
     if (score < state->score) {  // check if there is a better candidate
       state->score = score;
-      strlcpy(state->command, command, sizeof(state->command));
-      strlcpy(state->description, description, sizeof(state->description));
-      free(command);
-      free(description);
+      if (state->command)
+        free(state->command);
+      if (state->description)
+        free(state->description);
+      state->command = strdup(command);
+      state->description = strdup(description);
     }
   }
+  free(command);
+  free(description);
 }
 
 static void simplestroke_detect_usage() {
@@ -81,13 +85,12 @@ int simplestroke_detect(const int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  GestureSelectionState state = { .command = { 0 },
-                                  .description = { 0 },
+  GestureSelectionState state = { .command = NULL,
+                                  .description = NULL,
                                   .score = stroke_infinity };
   error = record_stroke(&state.stroke);
   if (error) {
     warnx("Failed recording gesture: %s", error);
-    free((void *)error);
     return EXIT_FAILURE;
   }
 
@@ -99,13 +102,20 @@ int simplestroke_detect(const int argc, char **argv) {
 
   database_close(db);
 
+  int retval = EXIT_FAILURE;
   if (state.score < stroke_infinity) { // We found a candidate
     if (no_exec)
       printf("Command: %s\nDescription: %s\n", state.command,
              state.description);
     else
       exec_commandline(state.command);
-    return EXIT_SUCCESS;
-  } else
-    return EXIT_FAILURE;
+    retval = EXIT_SUCCESS;
+  }
+
+  if (state.command)
+    free(state.command);
+  if (state.description)
+    free(state.description);
+
+  return retval;
 }

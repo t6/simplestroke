@@ -5,7 +5,7 @@ company-clang-arguments:
 	CFLAGS='${DEFS} -I$(top_builddir)/external/sqlite3 ${CFLAGS} ${xtst_CFLAGS}' \
 	python -c 'import os,shlex; s = shlex.split(os.environ["CFLAGS"]); print("\n".join(s))'
 
-MAN_BASE=	http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man%S/%N.%S?query=%N&sec=%S
+MAN_BASE=	https://www.freebsd.org/cgi/man.cgi?query=%N&sektion=%S&apropos=0&manpath=FreeBSD+10.1-RELEASE+and+Ports
 
 README.md: docs/simplestroke.1
 	@echo Regenerating README.md from man page

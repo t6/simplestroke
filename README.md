@@ -125,7 +125,7 @@ Do not execute the command associated with a detected gesture, but print informa
 <dt class="list-tag" style="margin-top: 1.00em;">
 <b class="flag">export</b></dt>
 <dd class="list-tag" style="margin-left: 10.00ex;">
-Outputs the gesture with the id given by <b class="flag">-i</b> as an SVG.  Output goes to <i class="arg">stdout</i>. Use  <b>display</b> from the ImageMagick package to view it. Alternatively, any modern browser will render SVGs.<dl style="margin-top: 0.00em;margin-bottom: 0.00em;" class="list list-tag">
+Outputs the gesture with the id given by <b class="flag">-i</b> as an SVG.  Output goes to <i class="arg">stdout</i>. All modern browsers will render SVGs.<dl style="margin-top: 0.00em;margin-bottom: 0.00em;" class="list list-tag">
 <dt class="list-tag" style="margin-top: 1.00em;">
 <b class="flag">-i</b> <i class="arg">id</i></dt>
 <dd class="list-tag" style="margin-left: 14.00ex;">
@@ -173,7 +173,7 @@ the release options prevents <b>xbindkeys</b> or <b>i3</b> from spawning multipl
 Note that binding to mouse buttons is currently not possible in <b>i3</b> 4.8.</div>
 </div>
 <div class="section">
-<h1 id="x53454520414c534f">SEE ALSO</h1> <a class="link-man" href="http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man1/display.1?query=display&amp;sec=1">display(1)</a> <a class="link-man" href="http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man1/i3.1?query=i3&amp;sec=1">i3(1)</a> <a class="link-man" href="http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man1/xbindkeys.1?query=xbindkeys&amp;sec=1">xbindkeys(1)</a></div>
+<h1 id="x53454520414c534f">SEE ALSO</h1> <a class="link-man" href="https://www.freebsd.org/cgi/man.cgi?query=i3&amp;sektion=1&amp;apropos=0&amp;manpath=FreeBSD+10.1-RELEASE+and+Ports">i3(1)</a> <a class="link-man" href="https://www.freebsd.org/cgi/man.cgi?query=xbindkeys&amp;sektion=1&amp;apropos=0&amp;manpath=FreeBSD+10.1-RELEASE+and+Ports">xbindkeys(1)</a></div>
 <div class="section">
 <h1 id="x415554484f5253">AUTHORS</h1> <span class="author">Tobias Kortkamp</span> &lt;<a class="link-mail" href="mailto:t@tobik.me">t@tobik.me</a>&gt;<div class="spacer">
 </div>

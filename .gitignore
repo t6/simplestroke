@@ -1,8 +1,8 @@
+*.1.gz
 *.o
 *.core
 simplestroke
 Makefile.in
-Makefile
 /config.guess
 /config.status
 /config.sub

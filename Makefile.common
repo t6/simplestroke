@@ -1,0 +1,54 @@
+PREFIX?=	/usr/local
+BINDIR?=	${PREFIX}/bin
+SHAREDIR?=	${PREFIX}/share
+
+PROG?=	simplestroke
+
+PACKAGES+=	x11 xtst
+
+PKGCONF?=	pkg-config
+PKG_CFLAGS!=	${PKGCONF} --cflags ${PACKAGES}
+PKG_LDFLAGS!=	${PKGCONF} --libs ${PACKAGES}
+
+CFLAGS+=	${PKG_CFLAGS}
+LDFLAGS+=	-pthread -lm
+LDFLAGS+=	${PKG_LDFLAGS}
+
+CSTD+=          c99
+# OpenBSD's bsd.prog.mk does not use CSTD
+CFLAGS+=	-std=${CSTD}
+
+CFLAGS+=        -Wall -Wextra -Wshadow
+
+SRCS+=\
+	db.c \
+	simplestroke.c \
+	simplestroke_delete.c \
+	simplestroke_detect.c \
+	simplestroke_export.c \
+	simplestroke_list.c \
+	simplestroke_new.c \
+	stroke.c \
+	tracker.c \
+	util.c
+
+CFLAGS+=        -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION=1 -DNDEBUG
+SRCS+=	sqlite3.c
+
+company-clang-arguments:
+	@env \
+	CFLAGS='${CFLAGS}' \
+	python -c 'import os,shlex; s = shlex.split(os.environ["CFLAGS"]); print("\n".join(s))'
+
+MAN_URL=	https://www.freebsd.org/cgi/man.cgi?query=%N&sektion=%S&apropos=0&manpath=FreeBSD+10.1-RELEASE+and+Ports
+
+README.md: ${MAN}
+	mandoc -Thtml -Ofragment -Oman="${MAN_URL}" ${MAN} > ${@}
+
+CLANG_FORMAT?=	clang-format
+
+fmt:
+	${CLANG_FORMAT} -i -style=Mozilla *.c *.h
+
+
+.PHONY:	fmt company-clang-arguments

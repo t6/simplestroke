@@ -1,23 +1,23 @@
 PREFIX?=	/usr/local
 BINDIR?=	${PREFIX}/bin
-SHAREDIR?=	${PREFIX}/share
+MANDIR?=	${PREFIX}/man
+DESTDIR?=	
+INSTALL?=	install
+PKGCONF?=	pkg-config
 
-PROG?=	simplestroke
+PROG=	simplestroke
+MAN=	simplestroke.1
 
 PACKAGES+=	x11 xtst
 
-PKGCONF?=	pkg-config
-PKG_CFLAGS!=	${PKGCONF} --cflags ${PACKAGES}
-PKG_LDFLAGS!=	${PKGCONF} --libs ${PACKAGES}
+PKG_CFLAGS=	`${PKGCONF} --cflags ${PACKAGES}`
+PKG_LDFLAGS=	`${PKGCONF} --libs ${PACKAGES}`
 
 CFLAGS+=	${PKG_CFLAGS}
 LDFLAGS+=	-pthread -lm
 LDFLAGS+=	${PKG_LDFLAGS}
 
-CSTD+=          c99
-# OpenBSD's bsd.prog.mk does not use CSTD
-CFLAGS+=	-std=${CSTD}
-
+CFLAGS+=	-std=c99 -I.
 CFLAGS+=        -Wall -Wextra -Wshadow
 
 SRCS+=\
@@ -35,6 +35,18 @@ SRCS+=\
 CFLAGS+=        -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION=1 -DNDEBUG
 SRCS+=	sqlite3.c
 
+${PROG}: ${SRCS:.c=.o}
+	${CC} -o ${@} ${LDFLAGS} ${SRCS:.c=.o}
+
+install: ${PROG} ${MAN}
+	mkdir -p ${DESTDIR}${BINDIR}
+	${INSTALL} -s -m 555  ${PROG} ${DESTDIR}${BINDIR}/${PROG}
+	mkdir -p ${DESTDIR}${MANDIR}/man1
+	${INSTALL} -m 444 ${MAN} ${DESTDIR}${MANDIR}/man1/${MAN}
+
+clean:
+	rm -f ${PROG} ${SRCS:.c=.o}
+
 company-clang-arguments:
 	@env \
 	CFLAGS='${CFLAGS}' \
@@ -50,5 +62,4 @@ CLANG_FORMAT?=	clang-format
 fmt:
 	${CLANG_FORMAT} -i -style=Mozilla *.c *.h
 
-
-.PHONY:	fmt company-clang-arguments
+.PHONY:	fmt company-clang-arguments install clean

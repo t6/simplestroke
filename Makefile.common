@@ -21,19 +21,9 @@ CFLAGS+=	-std=c99 -I.
 CFLAGS+=        -Wall -Wextra -Wshadow
 
 SRCS+=\
-	db.c \
 	simplestroke.c \
-	simplestroke_delete.c \
-	simplestroke_detect.c \
-	simplestroke_export.c \
-	simplestroke_list.c \
-	simplestroke_new.c \
 	stroke.c \
-	tracker.c \
-	util.c
-
-CFLAGS+=        -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION=1 -DNDEBUG
-SRCS+=	sqlite3.c
+	tracker.c
 
 ${PROG}: ${SRCS:.c=.o}
 	${CC} -o ${@} ${LDFLAGS} ${SRCS:.c=.o}
@@ -47,19 +37,14 @@ install: ${PROG} ${MAN}
 clean:
 	rm -f ${PROG} ${SRCS:.c=.o}
 
-company-clang-arguments:
-	@env \
-	CFLAGS='${CFLAGS}' \
-	python -c 'import os,shlex; s = shlex.split(os.environ["CFLAGS"]); print("\n".join(s))'
-
-MAN_URL=	https://www.freebsd.org/cgi/man.cgi?query=%N&sektion=%S&apropos=0&manpath=FreeBSD+10.1-RELEASE+and+Ports
+MAN_URL=	https://www.freebsd.org/cgi/man.cgi?query=%N&sektion=%S&apropos=0&manpath=FreeBSD+10.3-RELEASE+and+Ports
 
 README.md: ${MAN}
 	mandoc -Thtml -Ofragment -Oman="${MAN_URL}" ${MAN} > ${@}
 
-CLANG_FORMAT?=	clang-format
+CLANG_FORMAT?=	clang-format36
 
 fmt:
 	${CLANG_FORMAT} -i -style=Mozilla *.c *.h
 
-.PHONY:	fmt company-clang-arguments install clean
+.PHONY:	fmt install clean

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2016 Tobias Kortkamp <t@tobik.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,46 +21,199 @@
 #include <sysexits.h>
 #include <unistd.h>
 
-#include "util.h"
+#include "stroke.h"
+#include "tracker.h"
 
-extern int simplestroke_delete(const int argc, const char **argv);
-extern int simplestroke_detect(const int argc, const char **argv);
-extern int simplestroke_export(const int argc, const char **argv);
-extern int simplestroke_list(const int argc, const char **argv);
-extern int simplestroke_new(const int argc, const char **argv);
+const char* shell_script_template = "#!/bin/sh\n"
+                                    "case $(%s) in\n"
+                                    "    TopDown)\n"
+                                    "    ;;\n"
+                                    "    DownTop)\n"
+                                    "    ;;\n"
+                                    "    LeftRight)\n"
+                                    "    ;;\n"
+                                    "    RightLeft)\n"
+                                    "    ;;\n"
+                                    "    TopLeftDown)\n"
+                                    "    ;;\n"
+                                    "    TopRightDown)\n"
+                                    "    ;;\n"
+                                    "    DownLeftTop)\n"
+                                    "    ;;\n"
+                                    "    DownRightTop)\n"
+                                    "    ;;\n"
+                                    "    LeftZ)\n"
+                                    "    ;;\n"
+                                    "    RightZ)\n"
+                                    "    ;;\n"
+                                    "    SquareLeft)\n"
+                                    "    ;;\n"
+                                    "    SquareRight)\n"
+                                    "    ;;\n"
+                                    "    *)\n"
+                                    "        exit 1\n"
+                                    "esac\n";
 
-typedef struct {
-  char *name;
-  int (*handler)(const int, const char **);
-} Subcommand;
+enum Gesture {
+  // straight line gestures
+  TopDown,
+  DownTop,
+  LeftRight,
+  RightLeft,
 
-static Subcommand subcommands[] = {
-  { "delete", simplestroke_delete },
-  { "detect", simplestroke_detect },
-  { "export", simplestroke_export },
-  { "list", simplestroke_list },
-  { "new", simplestroke_new },
+  // Diagonal line gestures
+  TopLeftDown,
+  TopRightDown,
+  DownLeftTop,
+  DownRightTop,
+
+  // 'z' line gestures
+  LeftZ,  // a z starting from the left
+  RightZ, // a mirrored z starting from the right
+
+  SquareLeft,
+  SquareRight,
+
+  NoGesture
 };
 
-static void open_man_page() {
-  char *argv[] = { "man", "1", "simplestroke", NULL };
-  execvp("man", argv);
-  err(EX_OSERR, "execvp");
+struct {
+  const char* name;
+  size_t n;
+  struct {
+    double x;
+    double y;
+  } p[MAX_STROKE_POINTS];
+} default_gestures[] = {
+      [TopDown] = { "TopDown",
+                    3,
+                    { { 0.5, 0.0 }, { 0.5, 0.5 }, { 0.5, 1.0 } } },
+      [DownTop] = { "DownTop",
+                    3,
+                    { { 0.5, 1.0 }, { 0.5, 0.5 }, { 0.5, 0.0 } } },
+      [LeftRight] = { "LeftRight",
+                      3,
+                      { { 0.0, 0.5 }, { 0.5, 0.5 }, { 1.0, 0.5 } } },
+      [RightLeft] = { "RightLeft",
+                      3,
+                      { { 1.0, 0.5 }, { 0.5, 0.5 }, { 0.0, 0.5 } } },
+
+      [TopLeftDown] = { "TopLeftDown",
+                        3,
+                        { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
+      [TopRightDown] = { "TopRightDown",
+                         3,
+                         { { 1.0, 0.0 }, { 0.5, 0.5 }, { 0.0, 1.0 } } },
+      [DownLeftTop] = { "DownLeftTop",
+                        3,
+                        { { 1.0, 1.0 }, { 0.5, 0.5 }, { 0.0, 0.0 } } },
+      [DownRightTop] = { "DownRightTop",
+                         3,
+                         { { 0.0, 1.0 }, { 0.5, 0.5 }, { 1.0, 0.0 } } },
+
+      [LeftZ] = { "LeftZ",
+                  9,
+                  { { 0.0, 0.0 },
+                    { 0.5, 0.0 },
+                    { 1.0, 0.0 },
+                    { 0.75, 0.25 },
+                    { 0.5, 0.5 },
+                    { 0.25, 0.75 },
+                    { 0.0, 1.0 },
+                    { 0.5, 1.0 },
+                    { 1.0, 1.0 } } },
+      [RightZ] = { "RightZ",
+                   9,
+                   { { 1.0, 1.0 },
+                     { 0.5, 1.0 },
+                     { 0.0, 1.0 },
+                     { 0.25, 0.75 },
+                     { 0.5, 0.5 },
+                     { 0.75, 0.25 },
+                     { 1.0, 0.0 },
+                     { 0.5, 0.0 },
+                     { 0.0, 0.0 } } },
+
+      [SquareLeft] = { "SquareLeft",
+                       9,
+                       { { 0.0, 0.0 },
+                         { 0.5, 0.0 },
+                         { 1.0, 0.0 },
+                         { 1.0, 0.5 },
+                         { 1.0, 1.0 },
+                         { 0.5, 1.0 },
+                         { 0.0, 1.0 },
+                         { 0.0, 0.5 },
+                         { 0.0, 0.0 } } },
+      [SquareRight] = { "SquareRight",
+                        9,
+                        { { 0.0, 0.0 },
+                          { 0.0, 0.5 },
+                          { 0.0, 1.0 },
+                          { 0.5, 1.0 },
+                          { 1.0, 1.0 },
+                          { 1.0, 0.5 },
+                          { 1.0, 0.0 },
+                          { 0.5, 0.0 },
+                          { 0.0, 0.0 } } },
+};
+
+stroke_t strokes[NoGesture];
+
+extern int simplestroke_detect(const int argc, const char** argv);
+
+static void init_gestures() {
+  for (size_t i = 0; i < NoGesture; i++) {
+    for (size_t j = 0; j < default_gestures[i].n; j++) {
+      double x = default_gestures[i].p[j].x;
+      double y = default_gestures[i].p[j].y;
+      stroke_add_point(&strokes[i], x, y);
+    }
+    stroke_finish(&strokes[i]);
+  }
 }
 
-int main(int argc, char **argv) {
-  if (argc > 1) {
-    for (size_t i = 0; i < nitems(subcommands); i++) {
-      const Subcommand subcmd = subcommands[i];
-      if (!strcmp(argv[1], subcmd.name)) {
-        if (argc < 0)
-          return EXIT_FAILURE;
-        return subcmd.handler(argc - 1, (const char **)argv + 1);
+int main(int argc, char** argv) {
+  int ch;
+  while ((ch = getopt(argc, argv, "s")) != -1) {
+    switch (ch) {
+      case '?':
+      case ':':
+        fprintf(stderr, "usage: simplestroke [-s]\n");
+        return EX_USAGE;
+      case 's':
+        printf(shell_script_template, argv[0]);
+        return 0;
+      default:
+        break;
+    }
+  }
+
+  init_gestures();
+
+  stroke_t stroke = {};
+  const char* error = record_stroke(&stroke);
+  if (error) {
+    errx(1, "Failed recording gesture: %s", error);
+  }
+
+  enum Gesture gesture = NoGesture;
+  double best_score = stroke_infinity;
+  for (size_t i = 0; i < NoGesture; i++) {
+    stroke_t candidate = strokes[i];
+    double score = stroke_compare(&candidate, &stroke, NULL, NULL);
+    if (score < stroke_infinity) { // candidate has similarity with stroke
+      if (score < best_score) {    // check if there is a better candidate
+        best_score = score;
+        gesture = i;
       }
     }
   }
 
-  open_man_page();
+  if (gesture != NoGesture) {
+    printf("%s\n", default_gestures[gesture].name);
+    return 0;
+  }
 
-  return EXIT_FAILURE;
+  return 1;
 }

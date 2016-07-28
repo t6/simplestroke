@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+.\" Copyright (c) 2016 Tobias Kortkamp <t@tobik.me>
 .\"
 .\" Permission to use, copy, modify, and/or distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -13,103 +13,23 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd June 25, 2015
+.Dd July 28, 2016
 .Dt SIMPLESTROKE 1
 .Os
 .Sh NAME
 .Nm simplestroke
 .Nd "a gesture recognition application"
 .Sh SYNOPSIS
-.\" help
 .Nm
-.Fl h
-.\" new
-.Nm
-.Cm new
-.Fl d Ar description
-.Fl c Ar command
-.Op Fl w Ar seconds
-.Op Fl h
-.\" delete
-.Nm
-.Cm delete
-.Fl i Ar id
-.Op Fl h
-.\" detect
-.Nm
-.Cm detect
-.Op Fl hn
-.\" export
-.Nm
-.Cm export
-.Fl i Ar id
-.Op Fl f Ar file
-.Op Fl c Ar color
-.Op Fl h
-.\" list
-.Nm
-.Cm list
-.Op Fl h
+.Op Fl s
 .Sh DESCRIPTION
 .Nm
-is a gesture detection application.  It is backed by a SQLite database
-that is used to store the gestures.  Most of the interface consists of
-manipulating this database.  There are several modes and the first
-argument determines the mode
+is a simple application for detecting mouse gestures.  There are ten
+pre-defined mouse gesture you can choose from.
+
+With no arguments
 .Nm
-starts in.
-.Bl -tag -width ".Cm export"
-.\" new
-.It Cm new
-In this mode
-.Nm
-records a gesture and creates a new entry in the database.
-Every gesture needs to have a human readable
-.Ar description
-and an action or
-.Ar command
-to execute on detection of a gesture.
-The
-.Fl c
-and
-.Fl d
-options are required and \fBnot\fP optional.
-.Nm
-waits for 2 seconds before recording the gesture.  When you are
-finished drawing the gesture click or press any mouse button or key.
-.Bl -tag -width 14n
-.It Fl c Ar command
-The command to execute on detection of the gesture.
-.Ar command
-is passed to
-.Pa /bin/sh .
-.It Fl d Ar description
-A human-readable description for the gesture.  The description can be
-arbitrarily long.
-.It Fl w Ar seconds
-By default
-.Nm
-waits for 2 seconds before recording a gesture. You can override
-this behavior with
-.Fl w .
-If
-.Ar seconds
-is 0,
-.Nm
-will start recording your mouse movements immediately.
-.El
-.\" delete
-.It Cm delete
-This mode removes the given gesture from the database.
-.Bl -tag -width 14n
-.It Fl i Ar id
-The
-.Ar id
-of the gesture to delete.
-.El
-.\" detect
-.It Cm detect
-This mode starts gesture detection.  Draw your gesture and then confirm by
+starts in gesture detection mode.  Draw your gesture and then confirm by
 clicking any mouse button.
 .Pp
 More specifically,
@@ -118,68 +38,72 @@ reacts on the release of any mouse button.  This makes it possible to
 start
 .Nm
 with a pressed mouse button and start gesture analysis after releasing it.
-.Bl -tag -width 14n
-.It Fl n
-Do not execute the command associated with a detected gesture, but print
-information about it instead, if any.
-.El
-.\" export
-.It Cm export
-Outputs the gesture with the id given by
-.Fl i
-as an SVG.  Output goes to
-.Ar stdout .
-All modern browsers will render SVGs.
-.Bl -tag -width 14n
-.It Fl i Ar id
-The id of the gesture to export.
-.It Fl c Ar color
-The stroke color, can be in any format that is supported by SVG.
-.El
-.\" list
-.It Cm list
-Lists all gestures.  Output goes to
-.Ar stdout .
-.El
-.Sh EXAMPLES
-.Ss STARTING DETECTION
-To start gesture detection in every day situations, you might want to
-setup your desktop environment to start \fBsimplestroke detect\fP.
 .Pp
-E.g. to start
 .Nm
-with \fBxbindkeys\fP while holding down the 9th mouse
-button add this to your
+prints the name of the detected gesture, if any.  The output can then
+be used in a simple shell script to execute commands.  Use
+.Fl s
+to print a small script template you can base your script on.
+.Sh GESTURES
+The following gestures are supported.  The names are derived from the
+direction you would draw them in.
+.Ss STRAIGHT LINE GESTURES
+.Bd -literal
+TopDown
+DownTop
+LeftRight
+RightLeft
+.Ed
+.Ss DIAGONAL GESTURES
+.Bd -literal
+TopLeftDown
+TopRightDown
+DownLeftTop
+DownRightTop
+.Ed
+.Ss "Z" GESTURES
+.Bd -literal
+LeftZ
+RightZ
+.Ed
+.Ss SQUARE GESTURES
+.Bd -literal
+SquareLeft
+SquareRight
+.Ed
+.Sh EXAMPLES
+The following examples assume that \fBsimplestroke.sh\fP is the shell
+script you call
+.Nm
+from.
+.Ss STARTING DETECTION
+To start detection with \fBxbindkeys\fP while holding down the 9th
+mouse button add this to your
 .Pa ~/.xbindkeysrc
 .Bd -literal -offset indent
-"simplestroke detect"
+"simplestroke.sh"
         b:9
 .Ed
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,
 release it.
-.Nm
-will then analyse your gesture and determine
-which command to start, if any.
 
 To start gesture detection with your keyboard add this to your
 .Pa ~/.xbindkeysrc
 .Bd -literal -offset indent
-"simplestroke detect"
+"simplestroke.sh"
         Mod4 + c + Release
 .Ed
 .Pp
 or if you use \fBi3\fP add this to your
 .Pa ~/.config/i3/config
 .Bd -literal -offset indent
-bindsym --release $mod+c
+bindsym --release $mod+c exec simplestroke.sh
 .Ed
 .Pp
 the release options prevents \fBxbindkeys\fP or \fBi3\fP from spawning multiple
 .Nm
-processes.  Draw your gesture and press a mouse button to start detection.
-.Pp
-Note that binding to mouse buttons is currently not possible in \fBi3\fP 4.8.
+processes.
 .El
 .Sh SEE ALSO
 .Xr i3 1

@@ -15,7 +15,7 @@ SIMPLESTROKE(1)</td>
 </tbody>
 </table>
 <div class="section">
-<h1 id="x4e414d45">NAME</h1> <b class="name">simplestroke</b> &#8212; <span class="desc">a gesture recognition application</span></div>
+<h1 id="x4e414d45">NAME</h1> <b class="name">simplestroke</b> &#8212; <span class="desc">a small tool for detecting mouse gestures</span></div>
 <div class="section">
 <h1 id="x53594e4f50534953">SYNOPSIS</h1><table class="synopsis">
 <col style="width: 12.00ex;">

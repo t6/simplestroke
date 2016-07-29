@@ -31,8 +31,7 @@ simplestroke</td>
 </table>
 </div>
 <div class="section">
-<h1 id="x4445534352495054494f4e">DESCRIPTION</h1> <b class="name">simplestroke</b> is a simple application for detecting mouse gestures.  There are ten pre-defined mouse gesture you can choose from.<div style="height: 1.00em;">
-&#160;</div>
+<h1 id="x4445534352495054494f4e">DESCRIPTION</h1> <b class="name">simplestroke</b> is a simple application for detecting mouse gestures.  There are ten pre-defined mouse gesture you can choose from.<p>
 With no arguments <b class="name">simplestroke</b> starts in gesture detection mode.  Draw your gesture and then confirm by clicking any mouse button.<p>
 More specifically, <b class="name">simplestroke</b> reacts on the release of any mouse button.  This makes it possible to start <b class="name">simplestroke</b> with a pressed mouse button and start gesture analysis after releasing it.<p>
 <b class="name">simplestroke</b> prints the name of the detected gesture, if any.  The output can then be used in a simple shell script to execute commands.  Use <b class="flag">&#45;s</b> to print a small script template you can base your script on.</div>
@@ -69,8 +68,7 @@ SquareRight</pre>
 "simplestroke.sh" 
         b:9</pre>
 <p>
-Hold the mouse button and after you are finished drawing your gesture, release it.<div style="height: 1.00em;">
-&#160;</div>
+Hold the mouse button and after you are finished drawing your gesture, release it.<p>
 To start gesture detection with your keyboard add this to your <i class="file">~/.xbindkeysrc</i><p>
 <pre style="margin-left: 5.00ex;" class="lit display">
 "simplestroke.sh" 

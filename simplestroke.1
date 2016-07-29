@@ -26,7 +26,7 @@
 .Nm
 is a simple application for detecting mouse gestures.  There are ten
 pre-defined mouse gesture you can choose from.
-
+.Pp
 With no arguments
 .Nm
 starts in gesture detection mode.  Draw your gesture and then confirm by
@@ -87,7 +87,7 @@ mouse button add this to your
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,
 release it.
-
+.Pp
 To start gesture detection with your keyboard add this to your
 .Pa ~/.xbindkeysrc
 .Bd -literal -offset indent
@@ -104,7 +104,6 @@ bindsym --release $mod+c exec simplestroke.sh
 the release options prevents \fBxbindkeys\fP or \fBi3\fP from spawning multiple
 .Nm
 processes.
-.El
 .Sh SEE ALSO
 .Xr i3 1
 .Xr xbindkeys 1

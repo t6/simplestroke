@@ -1,4 +1,4 @@
-PACKAGES+=	libbsd
+PKGS+=	libbsd
 CFLAGS+=	-D_GNU_SOURCE
 CFLAGS+=\
 	-DHAVE_BSD_STDLIB_H \

@@ -25,6 +25,8 @@ SRCS+=\
 	stroke.c \
 	tracker.c
 
+all: ${PROG}
+
 ${PROG}: ${SRCS:.c=.o}
 	${CC} -o ${@} ${LDFLAGS} ${SRCS:.c=.o}
 

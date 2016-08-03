@@ -24,36 +24,6 @@
 #include "stroke.h"
 #include "tracker.h"
 
-const char* shell_script_template = "#!/bin/sh\n"
-                                    "case $(%s) in\n"
-                                    "    TopDown)\n"
-                                    "    ;;\n"
-                                    "    DownTop)\n"
-                                    "    ;;\n"
-                                    "    LeftRight)\n"
-                                    "    ;;\n"
-                                    "    RightLeft)\n"
-                                    "    ;;\n"
-                                    "    TopLeftDown)\n"
-                                    "    ;;\n"
-                                    "    TopRightDown)\n"
-                                    "    ;;\n"
-                                    "    DownLeftTop)\n"
-                                    "    ;;\n"
-                                    "    DownRightTop)\n"
-                                    "    ;;\n"
-                                    "    LeftZ)\n"
-                                    "    ;;\n"
-                                    "    RightZ)\n"
-                                    "    ;;\n"
-                                    "    SquareLeft)\n"
-                                    "    ;;\n"
-                                    "    SquareRight)\n"
-                                    "    ;;\n"
-                                    "    *)\n"
-                                    "        exit 1\n"
-                                    "esac\n";
-
 enum Gesture {
   // straight line gestures
   TopDown,
@@ -174,21 +144,6 @@ static void init_gestures() {
 }
 
 int main(int argc, char** argv) {
-  int ch;
-  while ((ch = getopt(argc, argv, "s")) != -1) {
-    switch (ch) {
-      case '?':
-      case ':':
-        fprintf(stderr, "usage: simplestroke [-s]\n");
-        return EX_USAGE;
-      case 's':
-        printf(shell_script_template, argv[0]);
-        return 0;
-      default:
-        break;
-    }
-  }
-
   init_gestures();
 
   stroke_t stroke = {};

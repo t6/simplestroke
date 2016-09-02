@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015 Tobias Kortkamp <t@tobik.me>
  * Copyright (c) 2009 Thomas Jaeger <ThJaeger@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
@@ -17,30 +17,27 @@
 #ifndef __STROKE_H__
 #define __STROKE_H__
 
-#include <unistd.h>
-
 #ifndef MAX_STROKE_POINTS
-#define MAX_STROKE_POINTS 512
+#define MAX_STROKE_POINTS    512
 #endif
 
 typedef struct {
-  double x;
-  double y;
-  double t;
-  double dt;
-  double alpha;
+	double x;
+	double y;
+	double t;
+	double dt;
+	double alpha;
 } point;
 
 typedef struct {
-  int n;
-  int is_finished;
-  point p[MAX_STROKE_POINTS];
+	int n;
+	int is_finished;
+	point p[MAX_STROKE_POINTS];
 } stroke_t;
 
-void stroke_add_point(stroke_t *stroke, double x, double y);
-void stroke_finish(stroke_t *stroke);
-double stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x,
-                      int *path_y);
+void stroke_add_point(stroke_t *, double, double);
+void stroke_finish(stroke_t *);
+double stroke_compare(const stroke_t *, const stroke_t *, int *, int *);
 
 extern const double stroke_infinity;
 

@@ -44,9 +44,4 @@ MAN_URL=	https://www.freebsd.org/cgi/man.cgi?query=%N&sektion=%S&apropos=0&manpa
 README.md: ${MAN}
 	mandoc -Thtml -Ofragment -Oman="${MAN_URL}" ${MAN} > ${@}
 
-CLANG_FORMAT?=	clang-format36
-
-fmt:
-	${CLANG_FORMAT} -i -style=Mozilla *.c *.h
-
-.PHONY:	fmt install clean
+.PHONY:	install clean

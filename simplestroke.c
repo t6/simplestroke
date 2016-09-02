@@ -22,7 +22,8 @@
 #include <unistd.h>
 
 #include "stroke.h"
-#include "tracker.h"
+
+extern void record_stroke(/* out */ stroke_t *);
 
 enum Gesture {
 	// straight line gestures

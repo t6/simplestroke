@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "tracker.h"
+#include "stroke.h"
 
 typedef struct {
 	Display *control;
@@ -144,8 +144,7 @@ record_stroke(/* out */ stroke_t *stroke)
 	if (0 == XRecordEnableContextAsync(state.data, state.context,
 	    &record_callback, (XPointer)&state)) {
 		record_cleanup(&state);
-		err(1, "could not enable data transfer between recording client and X "
-		    "server");
+		err(1, "could not enable data transfer");
 	}
 
 	while (state.track) {

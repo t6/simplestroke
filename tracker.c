@@ -116,16 +116,16 @@ record_stroke(/* out */ stroke_t *stroke)
 	// See http://www.x.org/docs/Xext/recordlib.pdf
 	if (!state.control) {
 		record_cleanup(&state);
-		err(1, "Could not open control display");
+		err(1, "open control display");
 	}
 	if (!state.data) {
 		record_cleanup(&state);
-		err(1, "Could not open data display");
+		err(1, "open data display");
 	}
 
 	if (!state.range) {
 		record_cleanup(&state);
-		err(1, "Could not create record range");
+		err(1, "create record range");
 	}
 
 	state.range->device_events.first = KeyPress;
@@ -136,7 +136,7 @@ record_stroke(/* out */ stroke_t *stroke)
 	    XRecordCreateContext(state.control, 0, &spec, 1, &state.range, 1);
 	if (!state.context) {
 		record_cleanup(&state);
-		err(1, "Could not create record context");
+		err(1, "create record context");
 	}
 
 	XSync(state.control, True);
@@ -144,7 +144,7 @@ record_stroke(/* out */ stroke_t *stroke)
 	if (0 == XRecordEnableContextAsync(state.data, state.context,
 	    &record_callback, (XPointer)&state)) {
 		record_cleanup(&state);
-		err(1, "could not enable data transfer");
+		err(1, "enable data transfer");
 	}
 
 	while (state.track) {

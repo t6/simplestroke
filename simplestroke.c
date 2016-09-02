@@ -158,8 +158,10 @@ main(__unused int argc, __unused char *argv[])
 	for (size_t i = 0; i < NoGesture; i++) {
 		stroke_t candidate = strokes[i];
 		double score = stroke_compare(&candidate, &stroke, NULL, NULL);
-		if (score < stroke_infinity) {          // candidate has similarity with stroke
-			if (score < best_score) {       // check if there is a better candidate
+		if (score < stroke_infinity) {
+			// candidate has similarity with stroke
+			if (score < best_score) {
+				// there is a better candidate
 				best_score = score;
 				gesture = i;
 			}
@@ -168,8 +170,8 @@ main(__unused int argc, __unused char *argv[])
 
 	if (gesture != NoGesture) {
 		printf("%s\n", default_gestures[gesture].name);
-		return (0);
+		return 0;
 	}
 
-	return (1);
+	return 1;
 }

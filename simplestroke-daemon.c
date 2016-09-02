@@ -19,12 +19,11 @@
 #include <X11/extensions/record.h>
 #include <assert.h>
 #include <err.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
 #include <unistd.h>
-
-#include "stroke.h"
 
 typedef struct {
 	Display *control;
@@ -97,7 +96,7 @@ int
 main(int argc, char *argv[])
 {
 	const char *errstr;
-	const char *command;
+	char *command;
 	RecorderState state;
 
 	if (argc >= 3) {
@@ -182,7 +181,17 @@ main(int argc, char *argv[])
 			usleep(50000);
 		}
 
-		system(command);
+		pid_t child = fork();
+		if (child == 0) {
+			execlp(command, command, NULL);
+		} else if (child == -1) {
+			err(1, "fork");
+		}
+
+		int status;
+		if (waitpid(child, &status, 0) == -1) {
+			err(1, "waitpid");
+		}
 	}
 
 	record_cleanup(&state);

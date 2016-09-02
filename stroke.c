@@ -41,7 +41,7 @@ void stroke_finish(stroke_t *s) {
   if (s->is_finished)
     return;
 
-  s->is_finished = true;
+  s->is_finished = 1;
 
   const int n = s->n - 1;
   double total = 0.0;
@@ -112,10 +112,10 @@ void step(const stroke_t *a, const stroke_t *b, const int N, double *dist,
   double next_ty = (b->p[j + 1].t - ty) / dty;
   double cur_t = 0.0;
 
-  while (true) {
+  while (1) {
     const double ad = pow(angle_difference(a->p[i].alpha, b->p[j].alpha), 2);
     double next_t = next_tx < next_ty ? next_tx : next_ty;
-    const bool done = next_t >= 1.0 - epsilon;
+    const int done = next_t >= 1.0 - epsilon;
     if (done)
       next_t = 1.0;
     d += (next_t - cur_t) * ad;

@@ -143,14 +143,11 @@ static void init_gestures() {
   }
 }
 
-int main(int argc, char** argv) {
+int main(__unused int argc, __unused char* argv[]) {
   init_gestures();
 
   stroke_t stroke = {};
-  const char* error = record_stroke(&stroke);
-  if (error) {
-    errx(1, "Failed recording gesture: %s", error);
-  }
+  record_stroke(&stroke);
 
   enum Gesture gesture = NoGesture;
   double best_score = stroke_infinity;

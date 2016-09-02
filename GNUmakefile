@@ -1,9 +1,0 @@
-PKGS+=	libbsd
-CFLAGS+=	-D_GNU_SOURCE
-CFLAGS+=\
-	-DHAVE_BSD_STDLIB_H \
-	-DHAVE_BSD_SYS_ENDIAN_H \
-	-DHAVE_BSD_STRING_H
-
-include Makefile.common
-

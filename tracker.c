@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Tobias Kortkamp <tobias.kortkamp@gmail.com>
+ * Copyright (c) 2015-2016 Tobias Kortkamp <t@tobik.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,29 +18,30 @@
 #include <X11/Xproto.h>
 #include <X11/extensions/record.h>
 #include <assert.h>
+#include <err.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "tracker.h"
 
 typedef struct {
-  Display *control;
-  Display *data;
-  XRecordRange *range;
+  Display* control;
+  Display* data;
+  XRecordRange* range;
   XRecordContext context;
 
-  bool track;
+  int track;
   INT16 x;
   INT16 y;
 
-  stroke_t *stroke;
+  stroke_t* stroke;
 } RecorderState;
 
 /******************************************************************************
  * Track the mouse
  */
 
-void record_cleanup(const RecorderState *state) {
+static void record_cleanup(const RecorderState* state) {
   if (!state)
     return;
 
@@ -57,15 +58,16 @@ void record_cleanup(const RecorderState *state) {
     XFree(state->range);
 }
 
-void record_callback(XPointer closure, XRecordInterceptData *record_data) {
-  RecorderState *state = (RecorderState *)closure;
+static void record_callback(XPointer closure,
+                            XRecordInterceptData* record_data) {
+  RecorderState* state = (RecorderState*)closure;
   // the data field can be treated as an xEvent as defined in X11/Xproto.h
-  const xEvent *event = (xEvent *)record_data->data;
+  const xEvent* event = (xEvent*)record_data->data;
 
   if (record_data->category == XRecordFromServer) {
     switch (event->u.u.type) {
       case ButtonRelease:
-        state->track = false;
+        state->track = False;
         break;
       case MotionNotify:
         state->x = event->u.keyButtonPointer.rootX;
@@ -80,7 +82,7 @@ void record_callback(XPointer closure, XRecordInterceptData *record_data) {
         !state->stroke->is_finished)
       stroke_add_point(state->stroke, state->x, state->y);
     else {
-      state->track = false;
+      state->track = 0;
       stroke_finish(state->stroke);
     }
   }
@@ -88,31 +90,31 @@ void record_callback(XPointer closure, XRecordInterceptData *record_data) {
   XRecordFreeData(record_data);
 }
 
-const char *record_stroke(/* out */ stroke_t *stroke) {
+void record_stroke(/* out */ stroke_t* stroke) {
   assert(stroke);
 
-  RecorderState state = { .control = XOpenDisplay(NULL),
-                          .data = XOpenDisplay(NULL),
-                          .range = XRecordAllocRange(),
-                          .track = true,
-                          .stroke = stroke,
-                          .context = 0,
-                          .x = 0,
-                          .y = 0 };
+  RecorderState state = {.control = XOpenDisplay(NULL),
+                         .data = XOpenDisplay(NULL),
+                         .range = XRecordAllocRange(),
+                         .track = 1,
+                         .stroke = stroke,
+                         .context = 0,
+                         .x = 0,
+                         .y = 0 };
 
   // See http://www.x.org/docs/Xext/recordlib.pdf
   if (!state.control) {
     record_cleanup(&state);
-    return "Could not open control display";
+    err(1, "Could not open control display");
   }
   if (!state.data) {
     record_cleanup(&state);
-    return "Could not open data display";
+    err(1, "Could not open data display");
   }
 
   if (!state.range) {
     record_cleanup(&state);
-    return "Could not create record range";
+    err(1, "Could not create record range");
   }
 
   state.range->device_events.first = KeyPress;
@@ -123,7 +125,7 @@ const char *record_stroke(/* out */ stroke_t *stroke) {
       XRecordCreateContext(state.control, 0, &spec, 1, &state.range, 1);
   if (!state.context) {
     record_cleanup(&state);
-    return "Could not create record context";
+    err(1, "Could not create record context");
   }
 
   XSync(state.control, True);
@@ -131,8 +133,8 @@ const char *record_stroke(/* out */ stroke_t *stroke) {
   if (0 == XRecordEnableContextAsync(state.data, state.context,
                                      &record_callback, (XPointer)&state)) {
     record_cleanup(&state);
-    return "could not enable data transfer between recording client and X "
-           "server";
+    err(1, "could not enable data transfer between recording client and X "
+           "server");
   }
 
   while (state.track) {
@@ -141,6 +143,4 @@ const char *record_stroke(/* out */ stroke_t *stroke) {
   }
 
   record_cleanup(&state);
-
-  return NULL;
 }

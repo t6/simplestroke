@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Tobias Kortkamp <t@tobik.me>
+ * Copyright (c) 2016 Tobias Kortkamp <t@tobik.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,6 +20,8 @@
 #include <assert.h>
 #include <err.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "stroke.h"
@@ -30,11 +32,9 @@ typedef struct {
 	XRecordRange *range;
 	XRecordContext context;
 
-	int track;
-	INT16 x;
-	INT16 y;
-
-	stroke_t *stroke;
+	int pressed;
+	int button;
+	int mod;
 } RecorderState;
 
 static void
@@ -70,24 +70,16 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 
 	if (record_data->category == XRecordFromServer) {
 		switch (event->u.u.type) {
-		case ButtonRelease:
-			state->track = 0;
-			break;
-		case MotionNotify:
-			state->x = event->u.keyButtonPointer.rootX;
-			state->y = event->u.keyButtonPointer.rootY;
+		case ButtonPress:
+			if (event->u.u.detail == state->button
+			    && (state->mod == -1
+				|| (event->u.keyButtonPointer.state & state->mod))) {
+				state->pressed = 1;
+			}
 			break;
 		default:
 			XRecordFreeData(record_data);
 			return;
-		}
-
-		if (state->track && (state->stroke->n < MAX_STROKE_POINTS) &&
-		    !state->stroke->is_finished) {
-			stroke_add_point(state->stroke, state->x, state->y);
-		} else {
-			state->track = 0;
-			stroke_finish(state->stroke);
 		}
 	}
 
@@ -95,20 +87,55 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 }
 
 void
-record_stroke(/* out */ stroke_t *stroke)
-{
-	assert(stroke);
+usage() {
+	fprintf(stderr,
+		"usage: simplestroke-daemon <command> <mouse button> [mod[1-5]|control|shift|lock]\n");
+	exit(1);
+}
 
-	RecorderState state = {
-		.control = XOpenDisplay(NULL),
-		.data = XOpenDisplay(NULL),
-		.range = XRecordAllocRange(),
-		.track = 1,
-		.stroke = stroke,
-		.context = 0,
-		.x = 0,
-		.y = 0
-	};
+int
+main(int argc, char *argv[])
+{
+	const char *errstr;
+	const char *command;
+	RecorderState state;
+
+	if (argc >= 3) {
+		command = argv[1];
+		state.mod = -1;
+		state.button = (int)strtonum(argv[2], 1, 16, &errstr);
+		if (errstr != NULL) {
+			errx(1, "mouse button: %s\n", errstr);
+		}
+
+		if (argc == 4) {
+			if (strcasecmp(argv[3], "mod1") == 0) {
+				state.mod = Mod1Mask;
+			} else if (strcasecmp(argv[3], "mod2") == 0) {
+				state.mod = Mod2Mask;
+			} else if (strcasecmp(argv[3], "mod3") == 0) {
+				state.mod = Mod3Mask;
+			} else if (strcasecmp(argv[3], "mod4") == 0) {
+				state.mod = Mod4Mask;
+			} else if (strcasecmp(argv[3], "mod5") == 0) {
+				state.mod = Mod5Mask;
+			} else if (strcasecmp(argv[3], "control") == 0) {
+				state.mod = ControlMask;
+			} else if (strcasecmp(argv[3], "shift") == 0) {
+				state.mod = ShiftMask;
+			} else if (strcasecmp(argv[3], "lock") == 0) {
+				state.mod = LockMask;
+			} else {
+				usage();
+			}
+		}
+	} else {
+		usage();
+	}
+
+	state.control = XOpenDisplay(NULL);
+	state.data = XOpenDisplay(NULL);
+	state.range = XRecordAllocRange();
 
 	// See http://www.x.org/docs/Xext/recordlib.pdf
 	if (!state.control) {
@@ -125,8 +152,8 @@ record_stroke(/* out */ stroke_t *stroke)
 		err(1, "create record range");
 	}
 
-	state.range->device_events.first = ButtonRelease;
-	state.range->device_events.last = MotionNotify;
+	state.range->device_events.first = ButtonPress;
+	state.range->device_events.last = ButtonPress;
 
 	XRecordClientSpec spec = XRecordAllClients;
 	state.context =
@@ -144,9 +171,18 @@ record_stroke(/* out */ stroke_t *stroke)
 		err(1, "enable data transfer");
 	}
 
-	while (state.track) {
-		XRecordProcessReplies(state.data);
-		usleep(50);
+	if (daemon(0, 0) < 0) {
+		err(1, "daemon");
+	}
+
+	while (1) {
+		state.pressed = 0;
+		while (!state.pressed) {
+			XRecordProcessReplies(state.data);
+			usleep(50000);
+		}
+
+		system(command);
 	}
 
 	record_cleanup(&state);

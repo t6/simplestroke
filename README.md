@@ -6,11 +6,11 @@
 <tbody>
 <tr>
 <td class="head-ltitle">
-SIMPLESTROKE(1)</td>
+SIMPLESTROKE-DAEMON(1)</td>
 <td class="head-vol" align="center">
 FreeBSD General Commands Manual</td>
 <td class="head-rtitle" align="right">
-SIMPLESTROKE(1)</td>
+SIMPLESTROKE-DAEMON(1)</td>
 </tr>
 </tbody>
 </table>
@@ -94,24 +94,13 @@ case $(simplestroke) in
         exit 1 
 esac</pre>
 <p>
-To start detection with <b>xbindkeys</b> while holding down the 9th mouse button add this to your <i class="file">~/.xbindkeysrc</i><p>
+To start detection with <b>simplestroke-daemon</b> while holding down the 9th mouse button add this to your <i class="file">~/.xinitrc</i>.<p>
 <pre style="margin-left: 5.00ex;" class="lit display">
-"simplestroke.sh" 
-        b:9</pre>
+simplestroke-daemon simplestroke.sh 9</pre>
 <p>
-Hold the mouse button and after you are finished drawing your gesture, release it.<p>
-To start gesture detection with your keyboard add this to your <i class="file">~/.xbindkeysrc</i><p>
-<pre style="margin-left: 5.00ex;" class="lit display">
-"simplestroke.sh" 
-        Mod4 + c + Release</pre>
-<p>
-or if you use <b>i3</b> add this to your <i class="file">~/.config/i3/config</i><p>
-<pre style="margin-left: 5.00ex;" class="lit display">
-bindsym --release $mod+c exec simplestroke.sh</pre>
-<p>
-the release options prevents <b>xbindkeys</b> or <b>i3</b> from spawning multiple <b class="name">simplestroke</b> processes.</div>
+Hold the mouse button and after you are finished drawing your gesture, release it.</div>
 <div class="section">
-<h1 id="x53454520414c534f">SEE ALSO</h1> <a class="link-man" href="https://www.freebsd.org/cgi/man.cgi?query=i3&amp;sektion=1&amp;apropos=0&amp;manpath=FreeBSD+10.3-RELEASE+and+Ports">i3(1)</a> <a class="link-man" href="https://www.freebsd.org/cgi/man.cgi?query=xbindkeys&amp;sektion=1&amp;apropos=0&amp;manpath=FreeBSD+10.3-RELEASE+and+Ports">xbindkeys(1)</a></div>
+<h1 id="x53454520414c534f">SEE ALSO</h1> <a class="link-man" href="https://man.freebsd.org/simplestroke-daemon(1)">simplestroke-daemon(1)</a></div>
 <div class="section">
 <h1 id="x415554484f5253">AUTHORS</h1> <span class="author">Tobias Kortkamp</span> &#60;<a class="link-mail" href="mailto:t@tobik.me">t@tobik.me</a>&#62;<p>
 <b class="name">simplestroke</b> is inspired and based on  <b>easystroke</b> 0.6.0 written by Thomas Jaeger &#60;<a class="link-ext" href="https://github.com/thjaeger/easystroke">https://github.com/thjaeger/easystroke</a>&#62;.</div>
@@ -121,7 +110,7 @@ the release options prevents <b>xbindkeys</b> or <b>i3</b> from spawning multipl
 <tbody>
 <tr>
 <td class="foot-date">
-July 28, 2016</td>
+September 2, 2016</td>
 <td class="foot-os" align="right">
 FreeBSD 10.3</td>
 </tr>

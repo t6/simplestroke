@@ -13,8 +13,8 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 28, 2016
-.Dt SIMPLESTROKE 1
+.Dd September 2, 2016
+.Dt SIMPLESTROKE-DAEMON 1
 .Os
 .Sh NAME
 .Nm simplestroke
@@ -105,36 +105,17 @@ case $(simplestroke) in
 esac
 .Ed
 .Pp
-To start detection with \fBxbindkeys\fP while holding down the 9th
+To start detection with \fBsimplestroke-daemon\fP while holding down the 9th
 mouse button add this to your
-.Pa ~/.xbindkeysrc
+.Pa ~/.xinitrc .
 .Bd -literal -offset indent
-"simplestroke.sh"
-        b:9
+simplestroke-daemon simplestroke.sh 9
 .Ed
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,
 release it.
-.Pp
-To start gesture detection with your keyboard add this to your
-.Pa ~/.xbindkeysrc
-.Bd -literal -offset indent
-"simplestroke.sh"
-        Mod4 + c + Release
-.Ed
-.Pp
-or if you use \fBi3\fP add this to your
-.Pa ~/.config/i3/config
-.Bd -literal -offset indent
-bindsym --release $mod+c exec simplestroke.sh
-.Ed
-.Pp
-the release options prevents \fBxbindkeys\fP or \fBi3\fP from spawning multiple
-.Nm
-processes.
 .Sh SEE ALSO
-.Xr i3 1
-.Xr xbindkeys 1
+.Xr simplestroke-daemon 1
 .Sh AUTHORS
 .An Tobias Kortkamp Aq Mt t@tobik.me
 .Pp

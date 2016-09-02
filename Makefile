@@ -1,12 +1,9 @@
 PREFIX?=	/usr/local
 BINDIR?=	${PREFIX}/bin
 MANDIR?=	${PREFIX}/man
-DESTDIR?=	
+DESTDIR?=
 INSTALL?=	install
 PKGCONF?=	pkg-config
-
-PROG=	simplestroke
-MAN=	simplestroke.1
 
 PKGS+=	x11 xtst
 
@@ -20,28 +17,28 @@ LDFLAGS+=	${PKG_LDFLAGS}
 CFLAGS+=	-std=c99 -I.
 CFLAGS+=        -Wall -Wextra -Wshadow
 
-SRCS+=\
-	simplestroke.c \
-	stroke.c \
-	tracker.c
+all: simplestroke simplestroke-daemon
 
-all: ${PROG}
+simplestroke: simplestroke.o stroke.o tracker.o
+	${CC} -o ${@} ${LDFLAGS} simplestroke.o stroke.o tracker.o
 
-${PROG}: ${SRCS:.c=.o}
-	${CC} -o ${@} ${LDFLAGS} ${SRCS:.c=.o}
+simplestroke-daemon: simplestroke-daemon.o
+	${CC} -o ${@} ${LDFLAGS} simplestroke-daemon.o
 
 install: ${PROG} ${MAN}
 	mkdir -p ${DESTDIR}${BINDIR}
-	${INSTALL} -s -m 555  ${PROG} ${DESTDIR}${BINDIR}/${PROG}
+	${INSTALL} -s -m 555 simplestroke ${DESTDIR}${BINDIR}/
+	${INSTALL} -s -m 555 simplestroke-daemon ${DESTDIR}${BINDIR}/
 	mkdir -p ${DESTDIR}${MANDIR}/man1
-	${INSTALL} -m 444 ${MAN} ${DESTDIR}${MANDIR}/man1/${MAN}
+	${INSTALL} -m 444 simplestroke.1 ${DESTDIR}${MANDIR}/man1/
+	${INSTALL} -m 444 simplestroke-daemon.1 ${DESTDIR}${MANDIR}/man1/
 
 clean:
-	rm -f ${PROG} ${SRCS:.c=.o}
+	rm -f simplestroke simplestroke-daemon *.o
 
-MAN_URL=	https://www.freebsd.org/cgi/man.cgi?query=%N&sektion=%S&apropos=0&manpath=FreeBSD+10.3-RELEASE+and+Ports
+MAN_URL=	https://man.freebsd.org/%N(%S)
 
-README.md: ${MAN}
-	mandoc -Thtml -Ofragment -Oman="${MAN_URL}" ${MAN} > ${@}
+README.md:
+	mandoc -Thtml -Ofragment -Oman="${MAN_URL}" simplestroke.1 > ${@}
 
-.PHONY:	install clean
+.PHONY:	README.md install clean

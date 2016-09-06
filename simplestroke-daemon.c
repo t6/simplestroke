@@ -88,49 +88,58 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 void
 usage() {
 	fprintf(stderr,
-		"usage: simplestroke-daemon <command> <mouse button> [mod[1-5]|control|shift|lock]\n");
+		"usage: simplestroke-daemon -c <command> [-b <mouse button>] [-m mod[1-5]|control|shift|lock]\n");
 	exit(1);
 }
 
 int
 main(int argc, char *argv[])
 {
+	int ch;
 	const char *errstr;
-	char *command;
-	RecorderState state;
+	char *command = NULL;
+	RecorderState state = { .button = 3, .mod = -1 };
 
-	if (argc >= 3) {
-		command = argv[1];
-		state.mod = -1;
-		state.button = (int)strtonum(argv[2], 1, 16, &errstr);
-		if (errstr != NULL) {
-			errx(1, "mouse button: %s\n", errstr);
-		}
-
-		if (argc == 4) {
-			if (strcasecmp(argv[3], "mod1") == 0) {
+	while ((ch = getopt(argc, argv, "b:c:m:")) != -1) {
+		switch (ch) {
+		case 'b':
+			state.button = (int)strtonum(optarg, 1, 16, &errstr);
+			if (errstr != NULL) {
+				errx(1, "mouse button: %s\n", errstr);
+			}
+			break;
+		case 'c':
+			command = optarg;
+			break;
+		case 'm':
+			if (strcasecmp(optarg, "mod1") == 0) {
 				state.mod = Mod1Mask;
-			} else if (strcasecmp(argv[3], "mod2") == 0) {
+			} else if (strcasecmp(optarg, "mod2") == 0) {
 				state.mod = Mod2Mask;
-			} else if (strcasecmp(argv[3], "mod3") == 0) {
+			} else if (strcasecmp(optarg, "mod3") == 0) {
 				state.mod = Mod3Mask;
-			} else if (strcasecmp(argv[3], "mod4") == 0) {
+			} else if (strcasecmp(optarg, "mod4") == 0) {
 				state.mod = Mod4Mask;
-			} else if (strcasecmp(argv[3], "mod5") == 0) {
+			} else if (strcasecmp(optarg, "mod5") == 0) {
 				state.mod = Mod5Mask;
-			} else if (strcasecmp(argv[3], "control") == 0) {
+			} else if (strcasecmp(optarg, "control") == 0) {
 				state.mod = ControlMask;
-			} else if (strcasecmp(argv[3], "shift") == 0) {
+			} else if (strcasecmp(optarg, "shift") == 0) {
 				state.mod = ShiftMask;
-			} else if (strcasecmp(argv[3], "lock") == 0) {
+			} else if (strcasecmp(optarg, "lock") == 0) {
 				state.mod = LockMask;
 			} else {
 				usage();
 			}
+			break;
+		case '?':
+		default:
+			usage();
 		}
-	} else {
-		usage();
 	}
+
+	if (!command)
+		usage();
 
 	state.control = XOpenDisplay(NULL);
 	state.data = XOpenDisplay(NULL);

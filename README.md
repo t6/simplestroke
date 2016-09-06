@@ -62,7 +62,7 @@ SquareRight</pre>
 </div>
 </div>
 <div class="section">
-<h1 id="x4558414d504c4553">EXAMPLES</h1> The following examples assume that  <b>simplestroke.sh</b> is the shell script you call <b class="name">simplestroke</b> from:<p>
+<h1 id="x4558414d504c4553">EXAMPLES</h1> The following examples assume that <i class="file">simplestroke.sh</i> is the shell script you call <b class="name">simplestroke</b> from:<p>
 <pre style="margin-left: 5.00ex;" class="lit display">
 #!/bin/sh 
 case $(simplestroke) in 
@@ -94,9 +94,9 @@ case $(simplestroke) in
         exit 1 
 esac</pre>
 <p>
-To start detection with <b>simplestroke-daemon</b> while holding down the 9th mouse button add this to your <i class="file">~/.xinitrc</i>.<p>
-<pre style="margin-left: 5.00ex;" class="lit display">
-simplestroke-daemon simplestroke.sh 9</pre>
+To start detection with <a class="link-man" href="https://man.freebsd.org/simplestroke-daemon(1)">simplestroke-daemon(1)</a> while holding down the 9th mouse button add this to your <i class="file">~/.xinitrc</i>:<p>
+<pre style="margin-left: 2.00ex;" class="lit display">
+<b class="cmd">simplestroke-daemon -c simplestroke.sh -b 9</b></pre>
 <p>
 Hold the mouse button and after you are finished drawing your gesture, release it.</div>
 <div class="section">

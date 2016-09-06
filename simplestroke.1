@@ -69,8 +69,9 @@ SquareLeft
 SquareRight
 .Ed
 .Sh EXAMPLES
-The following examples assume that \fBsimplestroke.sh\fP is the shell
-script you call
+The following examples assume that
+.Pa simplestroke.sh
+is the shell script you call
 .Nm
 from:
 .Bd -literal -offset indent
@@ -105,11 +106,13 @@ case $(simplestroke) in
 esac
 .Ed
 .Pp
-To start detection with \fBsimplestroke-daemon\fP while holding down the 9th
+To start detection with
+.Xr simplestroke-daemon 1
+while holding down the 9th
 mouse button add this to your
-.Pa ~/.xinitrc .
-.Bd -literal -offset indent
-simplestroke-daemon simplestroke.sh 9
+.Pa ~/.xinitrc :
+.Bd -literal -offset 2n
+.Ic simplestroke-daemon -c simplestroke.sh -b 9
 .Ed
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,

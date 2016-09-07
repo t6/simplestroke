@@ -31,7 +31,7 @@ typedef struct {
 	XRecordRange *range;
 	XRecordContext context;
 
-	int pressed;
+	char *command;
 	int button;
 	int mod;
 } RecorderState;
@@ -73,7 +73,17 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 			if (event->u.u.detail == state->button
 			    && (state->mod == -1
 				|| (event->u.keyButtonPointer.state & state->mod))) {
-				state->pressed = 1;
+				pid_t child = fork();
+				if (child == 0) {
+					execlp(state->command, state->command, NULL);
+				} else if (child == -1) {
+					err(1, "fork");
+				}
+
+				int status;
+				if (waitpid(child, &status, 0) == -1) {
+					err(1, "waitpid");
+				}
 			}
 			break;
 		default:
@@ -97,8 +107,7 @@ main(int argc, char *argv[])
 {
 	int ch;
 	const char *errstr;
-	char *command = NULL;
-	RecorderState state = { .button = 3, .mod = -1 };
+	RecorderState state = { .command = NULL, .button = 3, .mod = -1 };
 
 	while ((ch = getopt(argc, argv, "b:c:m:")) != -1) {
 		switch (ch) {
@@ -109,7 +118,7 @@ main(int argc, char *argv[])
 			}
 			break;
 		case 'c':
-			command = optarg;
+			state.command = optarg;
 			break;
 		case 'm':
 			if (strcasecmp(optarg, "mod1") == 0) {
@@ -138,7 +147,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (!command)
+	if (!state.command)
 		usage();
 
 	state.control = XOpenDisplay(NULL);
@@ -165,7 +174,7 @@ main(int argc, char *argv[])
 
 	XRecordClientSpec spec = XRecordAllClients;
 	state.context =
-	    XRecordCreateContext(state.control, 0, &spec, 1, &state.range, 1);
+	    XRecordCreateContext(state.data, 0, &spec, 1, &state.range, 1);
 	if (!state.context) {
 		record_cleanup(&state);
 		err(1, "create record context");
@@ -173,35 +182,13 @@ main(int argc, char *argv[])
 
 	XSync(state.control, True);
 
-	if (0 == XRecordEnableContextAsync(state.data, state.context,
-	    &record_callback, (XPointer)&state)) {
-		record_cleanup(&state);
-		err(1, "enable data transfer");
-	}
-
 	if (daemon(0, 0) < 0) {
 		err(1, "daemon");
 	}
 
-	while (1) {
-		state.pressed = 0;
-		while (!state.pressed) {
-			XRecordProcessReplies(state.data);
-			usleep(50000);
-		}
-
-		pid_t child = fork();
-		if (child == 0) {
-			execlp(command, command, NULL);
-		} else if (child == -1) {
-			err(1, "fork");
-		}
-
-		int status;
-		if (waitpid(child, &status, 0) == -1) {
-			err(1, "waitpid");
-		}
-	}
-
+	XRecordEnableContext(
+		state.data, state.context, &record_callback, (XPointer)&state);
 	record_cleanup(&state);
+
+	return 1;
 }

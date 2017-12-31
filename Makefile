@@ -36,9 +36,7 @@ install: ${PROG} ${MAN}
 clean:
 	rm -f simplestroke simplestroke-daemon *.o
 
-MAN_URL=	https://man.freebsd.org/%N(%S)
-
 README.md:
-	mandoc -Thtml -Ofragment -Oman="${MAN_URL}" simplestroke.1 > ${@}
+	mandoc -Tmarkdown simplestroke.1 > ${@}
 
 .PHONY:	README.md install clean

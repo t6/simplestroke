@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Tobias Kortkamp <t@tobik.me>
+ * Copyright (c) 2016, 2019 Tobias Kortkamp <t@tobik.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,8 @@
 
 #include "stroke.h"
 
-extern void record_stroke(/* out */ stroke_t *);
+extern int evdev_record_stroke(/* out */ stroke_t *);
+extern int xorg_record_stroke(/* out */ stroke_t *);
 
 enum Gesture {
 	// straight line gestures
@@ -148,10 +149,16 @@ init_gestures()
 int
 main(__unused int argc, __unused char *argv[])
 {
-	init_gestures();
-
 	stroke_t stroke = {};
-	record_stroke(&stroke);
+#if defined(USE_EVDEV)
+	if (!evdev_record_stroke(&stroke))
+#endif
+#if defined(USE_X11)
+	if (!xorg_record_stroke(&stroke))
+#endif
+		return 1;
+
+	init_gestures();
 
 	enum Gesture gesture = NoGesture;
 	double best_score = stroke_infinity;

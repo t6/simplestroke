@@ -13,6 +13,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#ifdef USE_X11
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -94,8 +95,8 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 	XRecordFreeData(record_data);
 }
 
-void
-record_stroke(/* out */ stroke_t *stroke)
+int
+xorg_record_stroke(/* out */ stroke_t *stroke)
 {
 	assert(stroke);
 
@@ -150,4 +151,8 @@ record_stroke(/* out */ stroke_t *stroke)
 	}
 
 	record_cleanup(&state);
+
+	return 1;
 }
+
+#endif

@@ -1,5 +1,5 @@
 .\"
-.\" Copyright (c) 2016 Tobias Kortkamp <t@tobik.me>
+.\" Copyright (c) 2016, 2019 Tobias Kortkamp <t@tobik.me>
 .\"
 .\" Permission to use, copy, modify, and/or distribute this software for any
 .\" purpose with or without fee is hereby granted, provided that the above
@@ -13,8 +13,8 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd September 2, 2016
-.Dt SIMPLESTROKE-DAEMON 1
+.Dd July 13, 2019
+.Dt SIMPLESTROKE 1
 .Os
 .Sh NAME
 .Nm simplestroke
@@ -106,14 +106,24 @@ case $(simplestroke) in
 esac
 .Ed
 .Pp
-To start detection with
+Under Xorg to start detection with
 .Xr simplestroke-daemon 1
 while holding down the 9th
 mouse button add this to your
 .Pa ~/.xinitrc :
 .Bd -literal -offset 2n
-.Ic simplestroke-daemon -c simplestroke.sh -b 9
+simplestroke-daemon -c simplestroke.sh -b 9
 .Ed
+.Pp
+Under Wayland it depends on your compositor.
+For Sway add this to your
+.Pa ~/.config/sway/config :
+.Bd -literal -offset 2n
+bindsym --whole-window BTN_EXTRA exec simplestroke.sh
+.Ed
+.Pp
+where the right BTN_* value can be determined via
+.Xr libinput-debug-events 1 .
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,
 release it.

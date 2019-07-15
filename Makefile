@@ -1,61 +1,37 @@
-LOCALBASE?=		/usr/local
-PREFIX?=		/usr/local
-BINDIR?=		${PREFIX}/bin
-MANDIR?=		${PREFIX}/man
-DESTDIR?=
-BSD_INSTALL_PROGRAM?=	install -s -m 555
-BSD_INSTALL_MAN?=	install -m 444
-PKGCONF?=		pkg-config
+include Makefile.configure
 
-PKGS=
-.if defined(USE_X11)
-PKGS+=		x11 xtst
-CFLAGS+=	-DUSE_X11
-.endif
-.if defined(USE_EVDEV)
-CFLAGS+=	-DUSE_EVDEV -I${LOCALBASE}/include
-.endif
+MKDIR?=		mkdir -p
 
-PKG_CFLAGS=	`${PKGCONF} --cflags ${PKGS}`
-PKG_LDFLAGS=	`${PKGCONF} --libs ${PKGS}`
+CFLAGS+=	-std=c99
+LDADD+=		-lm
 
-CFLAGS+=	${PKG_CFLAGS}
-LDFLAGS+=	-pthread -lm
-LDFLAGS+=	${PKG_LDFLAGS}
-
-CFLAGS+=	-std=c99 -I.
-CFLAGS+=        -Wall -Wextra -Wshadow
-
-.if defined(USE_X11)
 all: simplestroke simplestroke-daemon
-.elif defined(USE_EVDEV)
-all: simplestroke
-.else
-all:
-	@echo "You must define which backend to build: USE_X11, USE_EVDEV, or both"
-	@false
-.endif
 
-simplestroke: simplestroke.o stroke.o tracker_x11.o tracker_evdev.o
-	${CC} -o ${@} ${LDFLAGS} simplestroke.o stroke.o tracker_x11.o tracker_evdev.o
+.c.o:
+	${CC} ${CPPFLAGS} -fPIC ${CFLAGS} -o $@ -c $<
 
-simplestroke-daemon: simplestroke-daemon.o
-	${CC} -o ${@} ${LDFLAGS} simplestroke-daemon.o
+simplestroke: simplestroke.o stroke.o tracker.o
+	${CC} ${LDFLAGS} -o simplestroke simplestroke.o stroke.o tracker.o \
+		${LDADD}
 
-install: all
-	mkdir -p ${DESTDIR}${BINDIR}
-	${BSD_INSTALL_PROGRAM} simplestroke ${DESTDIR}${BINDIR}
-	mkdir -p ${DESTDIR}${MANDIR}/man1
-	${BSD_INSTALL_MAN} simplestroke.1 ${DESTDIR}${MANDIR}/man1
-.if defined(USE_X11)
-	${BSD_INSTALL_PROGRAM} simplestroke-daemon ${DESTDIR}${BINDIR}
-	${BSD_INSTALL_MAN} simplestroke-daemon.1 ${DESTDIR}${MANDIR}/man1
-.endif
+simplestroke-daemon: simplestroke-daemon.o stroke.o tracker.o
+	${CC} ${LDFLAGS} -o simplestroke-daemon simplestroke-daemon.o stroke.o \
+		tracker.o ${LDADD}
+
+simplestroke-daemon.o: config.h stroke.h tracker.h
+simplestroke.o: config.h stroke.h tracker.h
+stroke.o: config.h stroke.h
+tracker.o: config.h stroke.h tracker.h tracker_evdev.c tracker_x11.c
+
+install:
+	${MKDIR} ${DESTDIR}${BINDIR} ${DESTDIR}${MANDIR}/man1
+	${INSTALL_MAN} simplestroke-daemon.1 simplestroke.1 ${DESTDIR}${MANDIR}/man1
+	${INSTALL_PROGRAM} simplestroke-daemon simplestroke ${DESTDIR}${BINDIR}
 
 clean:
-	rm -f simplestroke simplestroke-daemon *.o
+	@rm -f *.o simplestroke-daemon simplestroke config.*.old
 
-README.md:
+README.md: simplestroke.1
 	mandoc -Tmarkdown simplestroke.1 > ${@}
 
-.PHONY:	README.md install clean
+.PHONY: all install

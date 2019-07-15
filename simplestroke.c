@@ -14,7 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <err.h>
+#include "config.h"
+
+#if HAVE_ERR
+# include <err.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,9 +26,7 @@
 #include <unistd.h>
 
 #include "stroke.h"
-
-extern int evdev_record_stroke(/* out */ stroke_t *);
-extern int xorg_record_stroke(/* out */ stroke_t *);
+#include "tracker.h"
 
 enum Gesture {
 	// straight line gestures
@@ -131,7 +133,7 @@ struct {
 			    { 0.0, 0.0 } } },
 };
 
-stroke_t strokes[NoGesture];
+static struct stroke strokes[NoGesture];
 
 static void
 init_gestures()
@@ -147,23 +149,21 @@ init_gestures()
 }
 
 int
-main(__unused int argc, __unused char *argv[])
+main(int argc, char *argv[])
 {
-	stroke_t stroke = {};
-#if defined(USE_EVDEV)
-	if (!evdev_record_stroke(&stroke))
-#endif
-#if defined(USE_X11)
-	if (!xorg_record_stroke(&stroke))
-#endif
+	tracker_init(NULL);
+
+	struct stroke stroke;
+	if (!tracker_record_stroke(&stroke, 0)) {
 		return 1;
+	}
 
 	init_gestures();
 
 	enum Gesture gesture = NoGesture;
 	double best_score = stroke_infinity;
 	for (size_t i = 0; i < NoGesture; i++) {
-		stroke_t candidate = strokes[i];
+		struct stroke candidate = strokes[i];
 		double score = stroke_compare(&candidate, &stroke, NULL, NULL);
 		if (score < stroke_infinity) {
 			// candidate has similarity with stroke

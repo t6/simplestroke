@@ -68,6 +68,20 @@ main(void)
 	return 1;
 }
 #endif /* TEST_ERR */
+#if TEST_EVDEV
+#ifdef __FreeBSD__
+#include <dev/evdev/input.h>
+#else
+#include <linux/input.h>
+#endif
+
+int
+main(void)
+{
+	struct input_event ev;
+	return 0;
+}
+#endif /* TEST_EVDEV */
 #if TEST_EXPLICIT_BZERO
 #include <string.h>
 
@@ -414,6 +428,15 @@ main(void)
 	return -1 != unveil(NULL, NULL);
 }
 #endif /* TEST_UNVEIL */
+#if TEST_X11
+#include <X11/Xlib.h>
+int
+main(void)
+{
+	XOpenDisplay(NULL);
+	return 0;
+}
+#endif
 #if TEST_ZLIB
 #include <stddef.h>
 #include <zlib.h>

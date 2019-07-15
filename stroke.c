@@ -15,6 +15,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <math.h>
 #include <string.h>
@@ -30,7 +32,7 @@ const double stroke_infinity = 0.2;
 static const double epsilon = 0.000001;
 
 void
-stroke_add_point(stroke_t *s, const double x, const double y)
+stroke_add_point(struct stroke *s, const double x, const double y)
 {
 	assert(MAX_STROKE_POINTS > s->n);
 	assert(!s->is_finished);
@@ -40,7 +42,7 @@ stroke_add_point(stroke_t *s, const double x, const double y)
 }
 
 void
-stroke_finish(stroke_t *s)
+stroke_finish(struct stroke *s)
 {
 	if (s->is_finished) {
 		return;
@@ -89,7 +91,7 @@ stroke_finish(stroke_t *s)
 	}
 }
 
-double
+static double
 angle_difference(const double alpha, const double beta)
 {
 	double d = alpha - beta;
@@ -103,17 +105,8 @@ angle_difference(const double alpha, const double beta)
 	}
 }
 
-double
-stroke_angle_difference(const stroke_t *a, const stroke_t *b,
-			const int i, const int j)
-{
-	assert(a);
-	assert(b);
-	return (fabs(angle_difference(a->p[i].alpha, b->p[j].alpha)));
-}
-
-void
-step(const stroke_t *a, const stroke_t *b, const int N, double *dist,
+static void
+step(const struct stroke *a, const struct stroke *b, const int N, double *dist,
      int *prev_x, int *prev_y, const int x, const int y, const double tx,
      const double ty, int *k, const int x2, const int y2)
 {
@@ -167,7 +160,7 @@ step(const stroke_t *a, const stroke_t *b, const int N, double *dist,
  * (roughly) all reparametrizations whose slope is always between 1/2 and 2.
  */
 double
-stroke_compare(const stroke_t *a, const stroke_t *b, int *path_x, int *path_y)
+stroke_compare(const struct stroke *a, const struct stroke *b, int *path_x, int *path_y)
 {
 	assert(a);
 	assert(b);

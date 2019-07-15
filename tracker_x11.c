@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016 Tobias Kortkamp <t@tobik.me>
+ * Copyright (c) 2015-2016, 2019 Tobias Kortkamp <t@tobik.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -13,17 +13,22 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-#ifdef USE_X11
+
+#include "config.h"
+
+#include <assert.h>
+#if HAVE_ERR
+# include <err.h>
+#endif
+#include <string.h>
+#include <unistd.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/record.h>
-#include <assert.h>
-#include <err.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "stroke.h"
+#include "tracker.h"
 
 typedef struct {
 	Display *control;
@@ -31,11 +36,12 @@ typedef struct {
 	XRecordRange *range;
 	XRecordContext context;
 
+	uint16_t button;
 	int track;
 	INT16 x;
 	INT16 y;
 
-	stroke_t *stroke;
+	struct stroke *stroke;
 } RecorderState;
 
 static void
@@ -71,6 +77,12 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 
 	if (record_data->category == XRecordFromServer) {
 		switch (event->u.u.type) {
+		case ButtonPress:
+			if (state->button != 0 &&
+			    event->u.u.detail == state->button) {
+				state->track = 0;
+			}
+			break;
 		case ButtonRelease:
 			state->track = 0;
 			break;
@@ -83,23 +95,35 @@ record_callback(XPointer closure, XRecordInterceptData *record_data)
 			return;
 		}
 
-		if (state->track && (state->stroke->n < MAX_STROKE_POINTS) &&
-		    !state->stroke->is_finished) {
-			stroke_add_point(state->stroke, state->x, state->y);
-		} else {
-			state->track = 0;
-			stroke_finish(state->stroke);
+		if (state->stroke != NULL) {
+			if (state->track && (state->stroke->n < MAX_STROKE_POINTS) &&
+			    !state->stroke->is_finished) {
+				stroke_add_point(state->stroke, state->x, state->y);
+			} else {
+				state->track = 0;
+				stroke_finish(state->stroke);
+			}
 		}
 	}
 
 	XRecordFreeData(record_data);
 }
 
-int
-xorg_record_stroke(/* out */ stroke_t *stroke)
+static int
+x11_init(void)
 {
-	assert(stroke);
+	Display *d = XOpenDisplay(NULL);
+	if (d) {
+		XCloseDisplay(d);
+		return 1;
+	}
 
+	return 0;
+}
+
+static int
+x11_record_stroke(/* out */ struct stroke *stroke, uint16_t button)
+{
 	RecorderState state = {
 		.control = XOpenDisplay(NULL),
 		.data = XOpenDisplay(NULL),
@@ -107,6 +131,7 @@ xorg_record_stroke(/* out */ stroke_t *stroke)
 		.track = 1,
 		.stroke = stroke,
 		.context = 0,
+		.button = button,
 		.x = 0,
 		.y = 0
 	};
@@ -154,5 +179,3 @@ xorg_record_stroke(/* out */ stroke_t *stroke)
 
 	return 1;
 }
-
-#endif

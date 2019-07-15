@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Tobias Kortkamp <t@tobik.me>
+ * Copyright (c) 2016, 2019 Tobias Kortkamp <t@tobik.me>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,132 +14,85 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/extensions/record.h>
-#include <assert.h>
-#include <err.h>
+#include "config.h"
+
+#include <sys/param.h>
+#if HAVE_ERR
+# include <err.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
-typedef struct {
-	Display *control;
-	Display *data;
-	XRecordRange *range;
-	XRecordContext context;
+#include "stroke.h"
+#include "tracker.h"
 
-	char *command;
-	int button;
-	int mod;
-} RecorderState;
+#ifndef nitems
+#define	nitems(x)	(sizeof((x)) / sizeof((x)[0]))
+#endif
+
+#if HAVE_EVDEV
+struct evdev_mouse_buttons {
+	const char *name;
+	const char *altname;
+	uint16_t value;
+};
+
+static struct evdev_mouse_buttons buttons[] = {
+	{ "BTN_MOUSE", NULL, 0x110 },
+	{ "BTN_LEFT", "left", 0x110 },
+	{ "BTN_RIGHT", "right", 0x111 },
+	{ "BTN_MIDDLE", "middle", 0x112 },
+	{ "BTN_SIDE", "side", 0x113 },
+	{ "BTN_EXTRA", "extra", 0x114 },
+	{ "BTN_FORWARD", "forward", 0x115 },
+	{ "BTN_BACK", "back", 0x116 },
+};
+#endif
 
 static void
-record_cleanup(const RecorderState *state)
+usage()
 {
-	if (!state) {
-		return;
-	}
-
-	if ((state->context != 0) && state->control) {
-		XRecordFreeContext(state->control, state->context);
-	}
-
-	if (state->control) {
-		XCloseDisplay(state->control);
-	}
-
-	if (state->data) {
-		XCloseDisplay(state->data);
-	}
-
-	if (state->range) {
-		XFree(state->range);
-	}
+	fprintf(stderr, "usage: simplestroke-daemon -c <command> -b <mouse button>\n");
+	exit(1);
 }
 
-static void
-record_callback(XPointer closure, XRecordInterceptData *record_data)
+static uint16_t
+parse_mouse_button(const char *arg)
 {
-	RecorderState *state = (RecorderState *)closure;
-	// the data field can be treated as an xEvent as defined in X11/Xproto.h
-	const xEvent *event = (xEvent *)record_data->data;
-
-	if (record_data->category == XRecordFromServer) {
-		switch (event->u.u.type) {
-		case ButtonPress:
-			if (event->u.u.detail == state->button
-			    && (state->mod == -1
-				|| (event->u.keyButtonPointer.state & state->mod))) {
-				pid_t child = fork();
-				if (child == 0) {
-					execlp(state->command, state->command, NULL);
-				} else if (child == -1) {
-					err(1, "fork");
-				}
-
-				int status;
-				if (waitpid(child, &status, 0) == -1) {
-					err(1, "waitpid");
-				}
-			}
-			break;
-		default:
-			XRecordFreeData(record_data);
-			return;
+#if HAVE_EVDEV
+	for (size_t i = 0; i < nitems(buttons); i++) {
+		if (strcmp(arg, buttons[i].name) == 0 ||
+		    (buttons[i].altname && strcmp(arg, buttons[i].altname) == 0)) {
+			return buttons[i].value;
 		}
 	}
+#endif
 
-	XRecordFreeData(record_data);
-}
+	const char *errstr;
+	int16_t button = (int16_t)strtonum(optarg, 0, INT_MAX, &errstr);
+	if (errstr == NULL) {
+		return button;
+	}
 
-void
-usage() {
-	fprintf(stderr,
-		"usage: simplestroke-daemon -c <command> [-b <mouse button>] [-m mod[1-5]|control|shift|lock]\n");
-	exit(1);
+	errx(1, "invalid mouse button");
 }
 
 int
 main(int argc, char *argv[])
 {
 	int ch;
-	const char *errstr;
-	RecorderState state = { .command = NULL, .button = 3, .mod = -1 };
+	const char *command = NULL;
+	uint16_t button;
 
-	while ((ch = getopt(argc, argv, "b:c:m:")) != -1) {
+	while ((ch = getopt(argc, argv, "b:c:")) != -1) {
 		switch (ch) {
 		case 'b':
-			state.button = (int)strtonum(optarg, 1, 16, &errstr);
-			if (errstr != NULL) {
-				errx(1, "mouse button: %s\n", errstr);
-			}
+			button = parse_mouse_button(optarg);
 			break;
 		case 'c':
-			state.command = optarg;
-			break;
-		case 'm':
-			if (strcasecmp(optarg, "mod1") == 0) {
-				state.mod = Mod1Mask;
-			} else if (strcasecmp(optarg, "mod2") == 0) {
-				state.mod = Mod2Mask;
-			} else if (strcasecmp(optarg, "mod3") == 0) {
-				state.mod = Mod3Mask;
-			} else if (strcasecmp(optarg, "mod4") == 0) {
-				state.mod = Mod4Mask;
-			} else if (strcasecmp(optarg, "mod5") == 0) {
-				state.mod = Mod5Mask;
-			} else if (strcasecmp(optarg, "control") == 0) {
-				state.mod = ControlMask;
-			} else if (strcasecmp(optarg, "shift") == 0) {
-				state.mod = ShiftMask;
-			} else if (strcasecmp(optarg, "lock") == 0) {
-				state.mod = LockMask;
-			} else {
-				usage();
-			}
+			command = optarg;
 			break;
 		case '?':
 		default:
@@ -147,48 +100,14 @@ main(int argc, char *argv[])
 		}
 	}
 
-	if (!state.command)
-		usage();
+	tracker_init(command);
 
-	state.control = XOpenDisplay(NULL);
-	state.data = XOpenDisplay(NULL);
-	state.range = XRecordAllocRange();
-
-	// See http://www.x.org/docs/Xext/recordlib.pdf
-	if (!state.control) {
-		record_cleanup(&state);
-		err(1, "open control display");
+	while (1) {
+		if (!tracker_record_stroke(NULL, button)) {
+			continue;
+		}
+		tracker_run_command();
 	}
-	if (!state.data) {
-		record_cleanup(&state);
-		err(1, "open data display");
-	}
-
-	if (!state.range) {
-		record_cleanup(&state);
-		err(1, "create record range");
-	}
-
-	state.range->device_events.first = ButtonPress;
-	state.range->device_events.last = ButtonPress;
-
-	XRecordClientSpec spec = XRecordAllClients;
-	state.context =
-	    XRecordCreateContext(state.data, 0, &spec, 1, &state.range, 1);
-	if (!state.context) {
-		record_cleanup(&state);
-		err(1, "create record context");
-	}
-
-	XSync(state.control, True);
-
-	if (daemon(0, 0) < 0) {
-		err(1, "daemon");
-	}
-
-	XRecordEnableContext(
-		state.data, state.context, &record_callback, (XPointer)&state);
-	record_cleanup(&state);
 
 	return 1;
 }

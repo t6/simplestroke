@@ -13,7 +13,7 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 17, 2019
+.Dd July 24, 2019
 .Dt SIMPLESTROKE-DAEMON 1
 .Os
 .Sh NAME
@@ -27,12 +27,20 @@
 .Nm
 detects mouse buttons clicks and then runs the specified command.
 .Sh EXAMPLES
-To run the
+Under Xorg to run the
 .Pa simplestroke.sh
 script when mouse button 9 is pressed
 .Bd -literal -offset 2n
-.Ic simplestroke-daemon -c simplestroke.sh -b 3
+simplestroke-daemon -c simplestroke.sh -b 9
 .Ed
+.Pp
+The right mouse button value can be determined via
+.Xr xev 1 .
+.Pp
+When using
+.Xr evdev 4
+the right mouse button values (BTN_*) can be determined via
+.Xr libinput-debug-events 1 .
 .Sh SEE ALSO
 .Xr simplestroke 1
 .Sh AUTHORS

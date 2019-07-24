@@ -13,7 +13,7 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 13, 2019
+.Dd July 24, 2019
 .Dt SIMPLESTROKE 1
 .Os
 .Sh NAME
@@ -115,14 +115,24 @@ mouse button add this to your
 simplestroke-daemon -c simplestroke.sh -b 9
 .Ed
 .Pp
-Under Wayland it depends on your compositor.
-For Sway add this to your
+Or when using
+.Xr evdev 4
+like this:
+.Bd -literal -offset 2n
+simplestroke-daemon -c simplestroke.sh -b BTN_EXTRA
+.Ed
+.Pp
+When using Sway
+.Xr simplestroke-daemon 1
+is not needed and starting
+.Nm
+can be accomplished via
 .Pa ~/.config/sway/config :
 .Bd -literal -offset 2n
 bindsym --whole-window BTN_EXTRA exec simplestroke.sh
 .Ed
 .Pp
-where the right BTN_* value can be determined via
+The right BTN_* values can be determined via
 .Xr libinput-debug-events 1 .
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,

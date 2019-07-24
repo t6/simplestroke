@@ -18,7 +18,7 @@
 
 #if HAVE_CAPSICUM
 # include <sys/capsicum.h>
-# include <capsicum_helpers.h>
+# include "capsicum_helpers.h"
 #endif
 #ifdef __FreeBSD__
 # include <sys/sysctl.h>

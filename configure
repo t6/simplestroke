@@ -328,6 +328,10 @@ if [ ${HAVE_EVDEV} -eq 0 ] && [ ${HAVE_X11} -eq 0 ]; then
 	exit 1
 fi
 
+if [ ${HAVE_X11} -eq 0 ]; then
+	X11_CFLAGS=
+	X11_LDADD=
+fi
 
 #----------------------------------------------------------------------
 # Output writing: generate the config.h file.

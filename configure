@@ -323,7 +323,7 @@ runtest x11		X11	"${X11_CFLAGS}" "${X11_LDADD}" || true
 runtest zlib		ZLIB		"" "-lz"	  || true
 runtest __progname	__PROGNAME			  || true
 
-if [ ${HAVE_X11} -eq 0 ] && [ ${HAVE_X11} -eq 0 ]; then
+if [ ${HAVE_EVDEV} -eq 0 ] && [ ${HAVE_X11} -eq 0 ]; then
 	echo "no possible tracker backend found!" 1>&2
 	exit 1
 fi

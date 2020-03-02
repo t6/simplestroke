@@ -227,7 +227,6 @@ evdev_init(void)
 
 #endif
 
-
 #ifdef __FreeBSD__
 	// Getting device properties via sysctls is not supported on all
 	// FreeBSD versions.  As a heuristic just check the 0th
@@ -247,9 +246,9 @@ evdev_init(void)
 			continue;
 		}
 		maxfd = MAX(maxfd, fd);
-		fds[i].fd = fd;
-		fds[i].events = POLLIN;
-		fds[i].revents = 0;
+		fds[nfds].fd = fd;
+		fds[nfds].events = POLLIN;
+		fds[nfds].revents = 0;
 		nfds++;
 	}
 

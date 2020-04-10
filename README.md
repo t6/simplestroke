@@ -1,4 +1,4 @@
-SIMPLESTROKE-DAEMON(1) - FreeBSD General Commands Manual
+SIMPLESTROKE(1) - FreeBSD General Commands Manual
 
 # NAME
 
@@ -97,27 +97,32 @@ from:
 	        exit 1
 	esac
 
-To start detection with
-simplestroke-daemon(1)
-while holding down the 9th
-mouse button add this to your
-*~/.xinitrc*:
+To start detection under i3 while holding down the 9th mouse button
+add this to your
+*~/.config/i3/config:*
 
-	**simplestroke-daemon -c simplestroke.sh -b 9**
+	bindsym --whole-window button9 exec simplestroke.sh
+
+The right mouse button can be determined via
+xev(1).
+
+For Sway add this to your
+*~/.config/sway/config*:
+
+	bindsym --whole-window BTN_EXTRA exec simplestroke.sh
+
+The right BTN\_\* values can be determined via
+libinput-debug-events(1).
 
 Hold the mouse button and after you are finished drawing your gesture,
 release it.
 
-# SEE ALSO
-
-simplestroke-daemon(1)
-
 # AUTHORS
 
-Tobias Kortkamp &lt;[t@tobik.me](mailto:t@tobik.me)&gt;
+Tobias Kortkamp &lt;[tobik@FreeBSD.org](mailto:tobik@FreeBSD.org)&gt;
 
 **simplestroke**
 is inspired and based on **easystroke** 0.6.0 written by Thomas Jaeger
 &lt;[https://github.com/thjaeger/easystroke](https://github.com/thjaeger/easystroke)&gt;.
 
-FreeBSD 12.0-CURRENT - September 2, 2016
+FreeBSD 13.0-CURRENT - April 10, 2020

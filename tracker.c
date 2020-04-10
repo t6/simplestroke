@@ -31,10 +31,6 @@ static void tracker_run_command_internal(void);
 #include "tracker_evdev.c"
 #endif
 
-#if HAVE_X11
-#include "tracker_x11.c"
-#endif
-
 void
 tracker_init(const char *command_)
 {
@@ -43,19 +39,7 @@ tracker_init(const char *command_)
 #if HAVE_EVDEV
 	if (!evdev_init())
 #endif
-#if HAVE_X11
-	if (!x11_init())
-#endif
 		errx(1, "failed to initialize mouse tracker");
-
-#if 0
-	if (command_ != NULL) {
-		if (daemon(0, 0) < 0) {
-			err(1, "daemon");
-		}
-	}
-#endif
-
 }
 
 int
@@ -67,9 +51,6 @@ tracker_record_stroke(struct stroke *stroke, uint16_t code)
 
 #if HAVE_EVDEV
 	if (!evdev_record_stroke(stroke, code))
-#endif
-#if HAVE_X11
-	if (!x11_record_stroke(stroke, code))
 #endif
 		return 0;
 

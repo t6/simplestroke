@@ -13,7 +13,7 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 24, 2019
+.Dd April 10, 2020
 .Dt SIMPLESTROKE 1
 .Os
 .Sh NAME
@@ -106,27 +106,17 @@ case $(simplestroke) in
 esac
 .Ed
 .Pp
-Under Xorg to start detection with
-.Xr simplestroke-daemon 1
-while holding down the 9th
-mouse button add this to your
-.Pa ~/.xinitrc :
+To start detection under i3 while holding down the 9th mouse button
+add this to your
+.Pa ~/.config/i3/config:
 .Bd -literal -offset 2n
-simplestroke-daemon -c simplestroke.sh -b 9
+bindsym --whole-window button9 exec simplestroke.sh
 .Ed
 .Pp
-Or when using
-.Xr evdev 4
-like this:
-.Bd -literal -offset 2n
-simplestroke-daemon -c simplestroke.sh -b BTN_EXTRA
-.Ed
+The right mouse button can be determined via
+.Xr xev 1 .
 .Pp
-When using Sway
-.Xr simplestroke-daemon 1
-is not needed and starting
-.Nm
-can be accomplished via
+For Sway add this to your
 .Pa ~/.config/sway/config :
 .Bd -literal -offset 2n
 bindsym --whole-window BTN_EXTRA exec simplestroke.sh
@@ -137,10 +127,8 @@ The right BTN_* values can be determined via
 .Pp
 Hold the mouse button and after you are finished drawing your gesture,
 release it.
-.Sh SEE ALSO
-.Xr simplestroke-daemon 1
 .Sh AUTHORS
-.An Tobias Kortkamp Aq Mt t@tobik.me
+.An Tobias Kortkamp Aq Mt tobik@FreeBSD.org
 .Pp
 .Nm
 is inspired and based on \fBeasystroke\fP 0.6.0 written by Thomas Jaeger

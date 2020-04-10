@@ -157,7 +157,6 @@ HAVE_STRNLEN=
 HAVE_STRTONUM=
 HAVE_SYSTRACE=
 HAVE_UNVEIL=
-HAVE_X11=
 HAVE_ZLIB=
 HAVE___PROGNAME=
 
@@ -288,9 +287,6 @@ runtest() {
 #    (5) alternative argument to cc *after* 
 #----------------------------------------------------------------------
 
-X11_CFLAGS="$(pkg-config --silence-errors --cflags x11 xtst || true)"
-X11_LDADD="$(pkg-config --silence-errors --libs x11 xtst || true)"
-
 runtest arc4random	ARC4RANDOM			  || true
 runtest b64_ntop	B64_NTOP "" "" "-lresolv"	  || true
 runtest capsicum	CAPSICUM			  || true
@@ -319,18 +315,12 @@ runtest strtonum	STRTONUM			  || true
 runtest sys_queue	SYS_QUEUE			  || true
 runtest systrace	SYSTRACE			  || true
 runtest unveil		UNVEIL				  || true
-runtest x11		X11	"${X11_CFLAGS}" "${X11_LDADD}" || true
 runtest zlib		ZLIB		"" "-lz"	  || true
 runtest __progname	__PROGNAME			  || true
 
-if [ ${HAVE_EVDEV} -eq 0 ] && [ ${HAVE_X11} -eq 0 ]; then
+if [ ${HAVE_EVDEV} -eq 0 ]; then
 	echo "no possible tracker backend found!" 1>&2
 	exit 1
-fi
-
-if [ ${HAVE_X11} -eq 0 ]; then
-	X11_CFLAGS=
-	X11_LDADD=
 fi
 
 #----------------------------------------------------------------------
@@ -415,7 +405,6 @@ cat << __HEREDOC__
 #define HAVE_SYS_QUEUE ${HAVE_SYS_QUEUE}
 #define HAVE_SYSTRACE ${HAVE_SYSTRACE}
 #define HAVE_UNVEIL ${HAVE_UNVEIL}
-#define HAVE_X11 ${HAVE_X11}
 #define HAVE_ZLIB ${HAVE_ZLIB}
 #define HAVE___PROGNAME ${HAVE___PROGNAME}
 __HEREDOC__

@@ -13,7 +13,7 @@
 .\" OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 .\" CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd April 10, 2020
+.Dd April 18, 2020
 .Dt SIMPLESTROKE 1
 .Os
 .Sh NAME
@@ -44,19 +44,26 @@ be used in a simple shell script to execute commands.
 .Sh GESTURES
 The following gestures are supported.  The names are derived from the
 direction you would draw them in.
+.Ss ARROW GESTURES
+.Bd -literal
+ArrowUp		^
+ArrowDown	v
+ArrowLeft	<
+ArrowRight	>
+.Ed
 .Ss STRAIGHT LINE GESTURES
 .Bd -literal
-TopDown
-DownTop
-LeftRight
-RightLeft
+TopDown 	| (start at top)
+DownTop		|
+LeftRight	- (left to right)
+RightLeft	- (right to left)
 .Ed
 .Ss DIAGONAL GESTURES
 .Bd -literal
-TopLeftDown
-TopRightDown
-DownLeftTop
-DownRightTop
+TopLeftDown	\\ (start at top)
+TopRightDown	/ (start at top)
+DownLeftTop	\\
+DownRightTop	/
 .Ed
 .Ss "Z" GESTURES
 .Bd -literal
@@ -65,8 +72,8 @@ RightZ
 .Ed
 .Ss SQUARE GESTURES
 .Bd -literal
-SquareLeft
-SquareRight
+SquareLeft	("clockwise" square)
+SquareRight	("counterclockwise" square)
 .Ed
 .Sh EXAMPLES
 The following examples assume that
@@ -77,6 +84,14 @@ from:
 .Bd -literal -offset indent
 #!/bin/sh
 case $(simplestroke) in
+    ArrowUp)
+    ;;
+    ArrowDown)
+    ;;
+    ArrowLeft)
+    ;;
+    ArrowRight)
+    ;;
     TopDown)
     ;;
     DownTop)

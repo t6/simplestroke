@@ -227,7 +227,7 @@ main(int argc, char *argv[])
 	tracker_init(NULL);
 
 	struct stroke stroke;
-	if (!tracker_record_stroke(&stroke, 0)) {
+	if (!tracker_record_stroke(&stroke)) {
 		return 1;
 	}
 

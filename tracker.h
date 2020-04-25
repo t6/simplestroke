@@ -19,7 +19,7 @@
 struct stroke;
 
 void tracker_init(const char *);
-int tracker_record_stroke(/* out */ struct stroke *stroke, uint16_t code);
+int tracker_record_stroke(/* out */ struct stroke *stroke);
 void tracker_run_command(void);
 
 #endif

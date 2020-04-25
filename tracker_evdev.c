@@ -279,7 +279,7 @@ evdev_init(void)
 }
 
 static int
-evdev_record_stroke(/* out */ struct stroke *stroke, uint16_t code)
+evdev_record_stroke(/* out */ struct stroke *stroke)
 {
 	double x = 0.0;
 	double y = 0.0;
@@ -302,13 +302,7 @@ evdev_record_stroke(/* out */ struct stroke *stroke, uint16_t code)
 					}
 					stroke_add_point(stroke, x, y);
 				} else if (ev.type == EV_KEY) {
-					if (code != 0) {
-						if (ev.code == code && ev.value == 1) {
-							goto end;
-						}
-					} else {
-						goto end;
-					}
+					goto end;
 				}
 			}
 		}

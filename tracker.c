@@ -43,14 +43,14 @@ tracker_init(const char *command_)
 }
 
 int
-tracker_record_stroke(struct stroke *stroke, uint16_t code)
+tracker_record_stroke(struct stroke *stroke)
 {
 	if (stroke != NULL) {
 		memset(stroke, 0, sizeof(struct stroke));
 	}
 
 #if HAVE_EVDEV
-	if (!evdev_record_stroke(stroke, code))
+	if (!evdev_record_stroke(stroke))
 #endif
 		return 0;
 

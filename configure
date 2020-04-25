@@ -138,7 +138,6 @@ HAVE_ERR=
 HAVE_EXPLICIT_BZERO=
 HAVE_GETPROGNAME=
 HAVE_INFTIM=
-HAVE_MD5=
 HAVE_MEMMEM=
 HAVE_MEMRCHR=
 HAVE_MEMSET_S=
@@ -295,7 +294,6 @@ runtest evdev		EVDEV				  || true
 runtest explicit_bzero	EXPLICIT_BZERO			  || true
 runtest getprogname	GETPROGNAME			  || true
 runtest INFTIM		INFTIM				  || true
-runtest md5		MD5 "" "" "-lmd"		  || true
 runtest memmem		MEMMEM			  	  || true
 runtest memrchr		MEMRCHR			  	  || true
 runtest memset_s	MEMSET_S			  || true
@@ -355,8 +353,7 @@ __HEREDOC__
 
 # For the function declaration variables...
 
-[ ${HAVE_MD5} -eq 0 -o \
-  ${HAVE_REALLOCARRAY} -eq 0 -o \
+[ ${HAVE_REALLOCARRAY} -eq 0 -o \
   ${HAVE_RECALLOCARRAY} -eq 0 -o \
   ${HAVE_STRLCAT} -eq 0 -o \
   ${HAVE_STRLCPY} -eq 0 -o \
@@ -385,7 +382,6 @@ cat << __HEREDOC__
 #define HAVE_EXPLICIT_BZERO ${HAVE_EXPLICIT_BZERO}
 #define HAVE_GETPROGNAME ${HAVE_GETPROGNAME}
 #define HAVE_INFTIM ${HAVE_INFTIM}
-#define HAVE_MD5 ${HAVE_MD5}
 #define HAVE_MEMMEM ${HAVE_MEMMEM}
 #define HAVE_MEMRCHR ${HAVE_MEMRCHR}
 #define HAVE_MEMSET_S ${HAVE_MEMSET_S}
@@ -418,25 +414,6 @@ if [ ${HAVE_ERR} -eq 0 ]; then
 	echo "extern void warnx(const char *, ...);"
 	echo "extern void vwarn(const char *, va_list);"
 	echo "extern void vwarnx(const char *, va_list);"
-fi
-
-if [ ${HAVE_MD5} -eq 0 ]; then
-	echo "#define MD5_BLOCK_LENGTH 64"
-	echo "#define MD5_DIGEST_LENGTH 16"
-	echo "#define MD5_DIGEST_STRING_LENGTH (MD5_DIGEST_LENGTH * 2 + 1)"
-	cat <<!!
-typedef struct MD5Context {
-	u_int32_t state[4];
-	u_int64_t count;
-	u_int8_t buffer[MD5_BLOCK_LENGTH];
-} MD5_CTX;
-!!
-	echo "extern void MD5Init(MD5_CTX *);"
-	echo "extern void MD5Update(MD5_CTX *, const u_int8_t *, size_t);"
-	echo "extern void MD5Pad(MD5_CTX *);"
-	echo "extern void MD5Transform(u_int32_t [4], const u_int8_t [MD5_BLOCK_LENGTH]);"
-	echo "extern char *MD5End(MD5_CTX *, char *);"
-	echo "extern void MD5Final(u_int8_t [MD5_DIGEST_LENGTH], MD5_CTX *);";
 fi
 
 if [ ${HAVE_SECCOMP_FILTER} -eq 1 ]; then

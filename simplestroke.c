@@ -207,8 +207,9 @@ struct {
 };
 
 static struct stroke strokes[NoGesture];
+static void init_gestures(void);
 
-static void
+void
 init_gestures()
 {
 	for (size_t i = 0; i < NoGesture; i++) {

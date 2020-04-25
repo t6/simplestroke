@@ -38,7 +38,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#ifdef __FreeBSD__
+#if defined(__DragonFly__)
+#include <dev/misc/evdev/input.h>
+#elif defined(__FreeBSD__)
 #include <dev/evdev/input.h>
 #else
 #include <linux/input.h>
@@ -61,7 +63,7 @@ static int command_runner_fd[2] = { -1, -1 };
 #define	LONG_BITS	(sizeof(long) * 8)
 #define	NLONGS(x)	(((x) + LONG_BITS - 1) / LONG_BITS)
 
-static inline bool
+static inline int
 bit_is_set(const unsigned long *array, int bit)
 {
 	return !!(array[bit / LONG_BITS] & (1LL << (bit % LONG_BITS)));

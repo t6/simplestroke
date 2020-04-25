@@ -69,7 +69,9 @@ main(void)
 }
 #endif /* TEST_ERR */
 #if TEST_EVDEV
-#ifdef __FreeBSD__
+#if defined(__DragonFly__)
+#include <dev/misc/evdev/input.h>
+#elif defined(__FreeBSD__)
 #include <dev/evdev/input.h>
 #else
 #include <linux/input.h>
@@ -121,20 +123,6 @@ main(void)
 	return 0;
 }
 #endif /* TEST_INFTIM */
-#if TEST_MD5
-#include <sys/types.h>
-#include <md5.h>
-
-int main(void)
-{
-	MD5_CTX ctx;
-
-	MD5Init(&ctx);
-	MD5Update(&ctx, "abcd", 4);
-
-	return 0;
-}
-#endif /* TEST_MD5 */
 #if TEST_MEMMEM
 #define _GNU_SOURCE
 #include <string.h>
